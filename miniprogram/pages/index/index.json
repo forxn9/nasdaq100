@@ -1,5 +1,7 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "vix-gauge": "/components/vix-gauge/vix-gauge"
+  },
   "navigationBarTitleText": "纳斯达克指数",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark",

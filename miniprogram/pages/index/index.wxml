@@ -2,11 +2,20 @@
   <view class="atmosphere" aria-hidden="true">
     <view class="atmosphere__glow"></view>
     <view class="atmosphere__ticks"></view>
+    <view class="atmosphere__rail atmosphere__rail--left"></view>
+    <view class="atmosphere__rail atmosphere__rail--right"></view>
   </view>
 
   <view class="stage">
     <!-- Brand：加载/失败/成功均保留 -->
     <view class="brand {{status !== 'loading' ? 'anim-in' : ''}}">
+      <view class="brand__emblem" aria-hidden="true">
+        <view class="brand__crosshair">
+          <view class="brand__crosshair-h"></view>
+          <view class="brand__crosshair-v"></view>
+          <view class="brand__crosshair-ring"></view>
+        </view>
+      </view>
       <text class="brand__title">纳斯达克综合指数</text>
       <text class="brand__subtitle">NASDAQ Composite  ·  ^IXIC</text>
     </view>
@@ -33,6 +42,12 @@
     <!-- Success / 休市同布局 -->
     <block wx:else>
       <view class="hero anim-in anim-in--delay1">
+        <view class="hero__bezel" aria-hidden="true">
+          <view class="hero__corner hero__corner--tl"></view>
+          <view class="hero__corner hero__corner--tr"></view>
+          <view class="hero__corner hero__corner--bl"></view>
+          <view class="hero__corner hero__corner--br"></view>
+        </view>
         <text
           class="hero__price hero__price--{{quote.direction}} {{quote.marketStatus === 'open' ? 'hero__price--live' : ''}} {{flashPrice ? 'hero__price--flash' : ''}}"
         >{{quote.priceText}}</text>
@@ -70,5 +85,22 @@
         <view class="action__line"></view>
       </view>
     </block>
+
+    <!-- 下部次要区：VIX 表盘（不抢点位主焦点） -->
+    <view wx:if="{{vix}}" class="vix-section anim-in anim-in--delay4">
+      <view class="vix-section__rule" aria-hidden="true"></view>
+      <vix-gauge
+        value="{{vix.value}}"
+        valueText="{{vix.valueText}}"
+        zoneLabel="{{vix.zoneLabel}}"
+        zoneColor="{{vix.zoneColor}}"
+        changeText="{{vix.changeText}}"
+        changePercentText="{{vix.changePercentText}}"
+        direction="{{vix.direction}}"
+        symbol="{{vix.symbol}}"
+        gaugeMax="{{vix.gaugeMax}}"
+        hint="{{vixHint}}"
+      />
+    </view>
   </view>
 </view>

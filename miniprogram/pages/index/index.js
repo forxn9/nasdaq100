@@ -1,10 +1,13 @@
 const apiConfig = require("../../config/api");
 const { fetchNasdaqQuote } = require("../../services/nasdaq");
+const { fetchVixQuote } = require("../../services/vix");
 
 Page({
   data: {
     status: "loading", // loading | success | error
     quote: null,
+    vix: null,
+    vixHint: "",
     errorMessage: "",
     refreshing: false,
     flashPrice: false,
@@ -97,21 +100,38 @@ Page({
 
     const prevPrice = hasQuote ? this.data.quote.price : null;
 
-    this._inflight = fetchNasdaqQuote()
-      .then((quote) => {
+    this._inflight = Promise.all([
+      fetchNasdaqQuote(),
+      fetchVixQuote().catch((err) => {
+        console.warn("[vix]", err && err.message ? err.message : err);
+        return null;
+      }),
+    ])
+      .then(([quote, vix]) => {
         const shouldFlash =
           hasQuote && prevPrice !== null && prevPrice !== quote.price;
-        this.setData({
+        const patch = {
           status: "success",
           quote,
-          isMock: quote.source === "mock",
+          isMock: quote.source === "mock" || (vix && vix.source === "mock"),
           errorMessage: "",
           refreshing: false,
-        });
+          vixHint: "",
+        };
+        if (vix) {
+          patch.vix = vix;
+          patch.vixHint =
+            vix.source === "mock"
+              ? "VIX 为模拟数据（config/api.js 可切换）"
+              : "";
+        } else if (!this.data.vix) {
+          patch.vixHint = "VIX 暂不可用";
+        }
+        this.setData(patch);
         if (shouldFlash) this.triggerPriceFlash();
         this.syncAutoRefresh();
       })
-      .catch((err) => {
+      .catch(() => {
         if (this.data.quote) {
           this.setData({
             status: "success",

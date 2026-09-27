@@ -15,6 +15,15 @@ page {
   --skeleton: #d5dce6;
   --divider: rgba(21, 32, 51, 0.08);
 
+  /* VIX 表盘（UI §12.2） */
+  --vix-low: #1b7f4a;
+  --vix-mid: #c4a035;
+  --vix-high: #c45a12;
+  --vix-extreme: #c62828;
+  --gauge-steel: rgba(90, 101, 120, 0.55);
+  --gauge-track: rgba(21, 32, 51, 0.08);
+  --gauge-needle: #152033;
+
   min-height: 100vh;
   background: var(--bg-bottom);
   color: var(--ink);

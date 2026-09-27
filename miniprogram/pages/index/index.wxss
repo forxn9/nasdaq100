@@ -35,13 +35,35 @@
   );
 }
 
+.atmosphere__rail {
+  position: absolute;
+  top: 12%;
+  bottom: 18%;
+  width: 2rpx;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(21, 32, 51, 0.1) 20%,
+    rgba(21, 32, 51, 0.1) 80%,
+    transparent 100%
+  );
+}
+
+.atmosphere__rail--left {
+  left: 24rpx;
+}
+
+.atmosphere__rail--right {
+  right: 24rpx;
+}
+
 .stage {
   position: relative;
   z-index: 1;
   max-width: 840rpx;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 96rpx 48rpx calc(48rpx + env(safe-area-inset-bottom));
+  padding: 80rpx 48rpx calc(48rpx + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,6 +75,48 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+
+.brand__emblem {
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand__crosshair {
+  position: relative;
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.brand__crosshair-h,
+.brand__crosshair-v {
+  position: absolute;
+  background: rgba(21, 32, 51, 0.45);
+}
+
+.brand__crosshair-h {
+  left: 4rpx;
+  right: 4rpx;
+  top: 50%;
+  height: 2rpx;
+  margin-top: -1rpx;
+}
+
+.brand__crosshair-v {
+  top: 4rpx;
+  bottom: 4rpx;
+  left: 50%;
+  width: 2rpx;
+  margin-left: -1rpx;
+}
+
+.brand__crosshair-ring {
+  position: absolute;
+  inset: 6rpx;
+  border: 2rpx solid rgba(21, 32, 51, 0.35);
+  border-radius: 50%;
 }
 
 .brand__title {
@@ -72,12 +136,52 @@
 }
 
 .hero {
+  position: relative;
   width: 100%;
-  margin-top: 88rpx;
+  margin-top: 72rpx;
+  padding: 28rpx 20rpx 8rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+
+.hero__bezel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero__corner {
+  position: absolute;
+  width: 20rpx;
+  height: 20rpx;
+  border-color: rgba(21, 32, 51, 0.22);
+  border-style: solid;
+}
+
+.hero__corner--tl {
+  top: 0;
+  left: 0;
+  border-width: 2rpx 0 0 2rpx;
+}
+
+.hero__corner--tr {
+  top: 0;
+  right: 0;
+  border-width: 2rpx 2rpx 0 0;
+}
+
+.hero__corner--bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 2rpx 2rpx;
+}
+
+.hero__corner--br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 2rpx 2rpx 0;
 }
 
 .hero__price {
@@ -135,7 +239,7 @@
 
 .meta {
   width: 100%;
-  margin-top: 88rpx;
+  margin-top: 72rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -205,7 +309,7 @@
 }
 
 .action {
-  margin-top: 64rpx;
+  margin-top: 56rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -279,6 +383,22 @@
   color: var(--ink-subtle);
 }
 
+.vix-section {
+  width: 100%;
+  margin-top: 72rpx;
+  padding-top: 8rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vix-section__rule {
+  width: 120rpx;
+  height: 2rpx;
+  margin-bottom: 36rpx;
+  background: rgba(21, 32, 51, 0.12);
+}
+
 .anim-in {
   animation: rise-in 280ms ease-out both;
 }
@@ -293,6 +413,10 @@
 
 .anim-in--delay3 {
   animation-delay: 180ms;
+}
+
+.anim-in--delay4 {
+  animation-delay: 240ms;
 }
 
 @keyframes rise-in {
