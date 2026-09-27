@@ -1,6 +1,7 @@
 const apiConfig = require("../../config/api");
 const { fetchNasdaqQuote } = require("../../services/nasdaq");
 const { fetchVixQuote } = require("../../services/vix");
+const { fetchMonthHistory } = require("../../services/history");
 
 Page({
   data: {
@@ -8,6 +9,8 @@ Page({
     quote: null,
     vix: null,
     vixHint: "",
+    history: null,
+    historyHint: "",
     errorMessage: "",
     refreshing: false,
     flashPrice: false,
@@ -100,24 +103,36 @@ Page({
 
     const prevPrice = hasQuote ? this.data.quote.price : null;
 
-    this._inflight = Promise.all([
-      fetchNasdaqQuote(),
-      fetchVixQuote().catch((err) => {
-        console.warn("[vix]", err && err.message ? err.message : err);
-        return null;
-      }),
-    ])
-      .then(([quote, vix]) => {
+    this._inflight = fetchNasdaqQuote()
+      .then((quote) =>
+        Promise.all([
+          Promise.resolve(quote),
+          fetchVixQuote().catch((err) => {
+            console.warn("[vix]", err && err.message ? err.message : err);
+            return null;
+          }),
+          fetchMonthHistory(quote.price).catch((err) => {
+            console.warn("[history]", err && err.message ? err.message : err);
+            return null;
+          }),
+        ])
+      )
+      .then(([quote, vix, history]) => {
         const shouldFlash =
           hasQuote && prevPrice !== null && prevPrice !== quote.price;
         const patch = {
           status: "success",
           quote,
-          isMock: quote.source === "mock" || (vix && vix.source === "mock"),
+          isMock:
+            quote.source === "mock" ||
+            (vix && vix.source === "mock") ||
+            (history && history.source === "mock"),
           errorMessage: "",
           refreshing: false,
           vixHint: "",
+          historyHint: "",
         };
+
         if (vix) {
           patch.vix = { ...vix, available: true };
           patch.vixHint =
@@ -125,12 +140,11 @@ Page({
               ? "VIX 为模拟数据（config/api.js 可切换）"
               : "";
         } else if (!this.data.vix || this.data.vix.available === false) {
-          // §12.4：无数据仍展示空表盘（无指针 / -- / 暂不可用）
           patch.vix = {
             value: 0,
             valueText: "--",
             zoneLabel: "暂不可用",
-            zoneColor: "#8A93A3",
+            zoneColor: "#5E6673",
             changeText: "",
             changePercentText: "",
             direction: "flat",
@@ -140,6 +154,14 @@ Page({
           };
           patch.vixHint = "VIX 暂不可用";
         }
+
+        if (history && history.points && history.points.length) {
+          patch.history = history;
+        } else if (!this.data.history) {
+          patch.history = null;
+          patch.historyHint = "近一月走势暂不可用";
+        }
+
         this.setData(patch);
         if (shouldFlash) this.triggerPriceFlash();
         this.syncAutoRefresh();

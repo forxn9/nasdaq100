@@ -1,11 +1,8 @@
 .gauge {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   opacity: 0;
-  transform: translateY(12rpx);
-  transition: opacity 320ms ease-out, transform 320ms ease-out;
+  transform: translateY(8rpx);
+  transition: opacity 280ms ease-out, transform 280ms ease-out;
 }
 
 .gauge--ready {
@@ -13,9 +10,47 @@
   transform: translateY(0);
 }
 
+.gauge__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.gauge__kicker {
+  display: block;
+  font-size: 20rpx;
+  font-weight: 600;
+  color: var(--bn-yellow, #f0b90b);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6rpx;
+}
+
+.gauge__title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--bn-text, #eaecef);
+  line-height: 1.3;
+}
+
+.gauge__symbol {
+  font-size: 22rpx;
+  color: var(--bn-text-secondary, #848e9c);
+  font-variant-numeric: tabular-nums;
+  margin-top: 4rpx;
+}
+
+.gauge__body {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
 .gauge__dial {
   position: relative;
-  width: 100%;
+  flex: 1.15;
+  min-width: 0;
   display: flex;
   justify-content: center;
 }
@@ -24,62 +59,42 @@
   display: block;
 }
 
-/* §12.3：数值叠在圆心上方 */
 .gauge__readout {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 28%;
+  bottom: 22%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
 
 .gauge__value {
-  font-size: 56rpx;
+  font-size: 44rpx;
   font-weight: 700;
   line-height: 1.1;
-  color: var(--ink, #152033);
+  color: var(--bn-text, #eaecef);
   font-variant-numeric: tabular-nums;
   font-family: "DIN Alternate", "Menlo", "Courier New", monospace;
-  letter-spacing: -0.02em;
 }
 
 .gauge--empty .gauge__value {
-  color: var(--ink-subtle, #8a93a3);
+  color: var(--bn-text-tertiary, #5e6673);
 }
 
-.gauge__caption {
-  width: 100%;
-  margin-top: 4rpx;
+.gauge__meta {
+  flex: 0.95;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.gauge__title {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: var(--ink, #152033);
-  letter-spacing: 0.04em;
-  line-height: 1.3;
-}
-
-.gauge__symbol {
-  margin-top: 4rpx;
-  font-size: 22rpx;
-  color: var(--ink-subtle, #8a93a3);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.3;
+  align-items: flex-start;
+  padding-left: 8rpx;
 }
 
 .gauge__zone {
-  margin-top: 10rpx;
-  font-size: 24rpx;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 30rpx;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   line-height: 1.3;
 }
 
@@ -87,7 +102,7 @@
   margin-top: 10rpx;
   display: flex;
   align-items: baseline;
-  gap: 10rpx;
+  gap: 8rpx;
   font-size: 22rpx;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -95,56 +110,51 @@
 }
 
 .gauge__delta--up {
-  color: var(--up, #c62828);
+  color: var(--bn-up, #0ecb81);
 }
 
 .gauge__delta--down {
-  color: var(--down, #1b7f4a);
+  color: var(--bn-down, #f6465d);
 }
 
 .gauge__delta--flat {
-  color: var(--flat, #5a6578);
+  color: var(--bn-text-secondary, #848e9c);
 }
 
 .gauge__delta-sep {
-  color: var(--ink-subtle, #8a93a3);
+  color: var(--bn-text-tertiary, #5e6673);
   font-weight: 400;
-  font-family: "PingFang SC", sans-serif;
 }
 
 .gauge__legend {
-  margin-top: 24rpx;
-  width: 100%;
-  max-width: 560rpx;
+  margin-top: 20rpx;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12rpx 20rpx;
+  flex-direction: column;
+  gap: 10rpx;
 }
 
 .gauge__legend-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
 .gauge__legend-swatch {
-  width: 14rpx;
-  height: 14rpx;
+  width: 12rpx;
+  height: 12rpx;
   border-radius: 2rpx;
   flex-shrink: 0;
 }
 
 .gauge__legend-text {
   font-size: 20rpx;
-  color: var(--ink-subtle, #8a93a3);
-  line-height: 1.3;
+  color: var(--bn-text-secondary, #848e9c);
+  line-height: 1.2;
 }
 
 .gauge__hint {
   margin-top: 16rpx;
   font-size: 20rpx;
-  color: var(--ink-subtle, #8a93a3);
+  color: var(--bn-text-tertiary, #5e6673);
   line-height: 1.4;
-  text-align: center;
 }

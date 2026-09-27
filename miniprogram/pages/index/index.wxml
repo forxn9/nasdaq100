@@ -1,96 +1,80 @@
 <view class="page">
-  <view class="atmosphere" aria-hidden="true">
-    <view class="atmosphere__glow"></view>
-    <view class="atmosphere__ticks"></view>
-    <view class="atmosphere__rail atmosphere__rail--left"></view>
-    <view class="atmosphere__rail atmosphere__rail--right"></view>
-  </view>
-
   <view class="stage">
-    <!-- Brand：加载/失败/成功均保留 -->
-    <view class="brand {{status !== 'loading' ? 'anim-in' : ''}}">
-      <view class="brand__emblem" aria-hidden="true">
-        <view class="brand__crosshair">
-          <view class="brand__crosshair-h"></view>
-          <view class="brand__crosshair-v"></view>
-          <view class="brand__crosshair-ring"></view>
-        </view>
+    <!-- Loading -->
+    <block wx:if="{{status === 'loading'}}">
+      <view class="sym-row">
+        <view class="skeleton skeleton--sym"></view>
+        <view class="skeleton skeleton--pill"></view>
       </view>
-      <text class="brand__title">纳斯达克综合指数</text>
-      <text class="brand__subtitle">NASDAQ Composite  ·  ^IXIC</text>
-    </view>
-
-    <!-- Loading：骨架（含 VIX 空弧占位） -->
-    <view wx:if="{{status === 'loading'}}" class="hero">
       <view class="skeleton skeleton--price"></view>
       <view class="skeleton-row">
         <view class="skeleton skeleton--chg"></view>
         <view class="skeleton skeleton--chg"></view>
       </view>
+      <view class="skeleton skeleton--chart"></view>
+      <view class="skeleton skeleton--panel"></view>
       <text class="loading-hint">行情加载中</text>
+    </block>
 
-      <view class="vix-skeleton" aria-hidden="true">
-        <view class="vix-skeleton__rule"></view>
-        <view class="vix-skeleton__arc"></view>
-        <view class="skeleton skeleton--vix-value"></view>
-        <view class="skeleton skeleton--vix-label"></view>
-      </view>
-    </view>
-
-    <!-- Error：无缓存 -->
-    <view wx:elif="{{status === 'error'}}" class="error-panel anim-in">
+    <!-- Error -->
+    <view wx:elif="{{status === 'error'}}" class="error-panel">
       <text class="error-panel__text">{{errorMessage || '行情暂时无法获取，请稍后重试'}}</text>
-      <view class="action action--retry" bindtap="onRetry">
+      <view class="action" bindtap="onRetry">
         <view class="action__icon" aria-hidden="true">
           <view class="action__icon-ring"></view>
           <view class="action__icon-arrow"></view>
         </view>
         <text>重试</text>
-        <view class="action__line"></view>
       </view>
     </view>
 
-    <!-- Success / 休市同布局：点位主焦点 → 状态 → VIX → 刷新 -->
+    <!-- Success / 休市 -->
     <block wx:else>
-      <view class="hero anim-in anim-in--delay1">
-        <view class="hero__bezel" aria-hidden="true">
-          <view class="hero__corner hero__corner--tl"></view>
-          <view class="hero__corner hero__corner--tr"></view>
-          <view class="hero__corner hero__corner--bl"></view>
-          <view class="hero__corner hero__corner--br"></view>
+      <view class="sym-row anim-in">
+        <view class="sym-row__left">
+          <text class="sym-row__name">{{quote.name}}</text>
+          <text class="sym-row__code">{{quote.symbol}}</text>
         </view>
+        <view class="sym-row__status">
+          <view class="sym-row__dot sym-row__dot--{{quote.marketStatus}}"></view>
+          <text>{{quote.marketStatusText}}</text>
+        </view>
+      </view>
+
+      <view class="price-block anim-in anim-in--delay1">
         <text
-          class="hero__price hero__price--{{quote.direction}} {{quote.marketStatus === 'open' ? 'hero__price--live' : ''}} {{flashPrice ? 'hero__price--flash' : ''}}"
+          class="price-block__value price-block__value--{{quote.direction}} {{flashPrice ? 'price-block__value--flash' : ''}}"
         >{{quote.priceText}}</text>
-        <view class="hero__delta hero__delta--{{quote.direction}} anim-in anim-in--delay2">
-          <text class="hero__change">{{quote.changeText}}</text>
-          <text class="hero__sep">·</text>
-          <text class="hero__pct">{{quote.changePercentText}}</text>
+        <view class="price-block__delta price-block__delta--{{quote.direction}}">
+          <text>{{quote.changeText}}</text>
+          <text class="price-block__sep">·</text>
+          <text>{{quote.changePercentText}}</text>
+        </view>
+        <text class="price-block__meta">更新于 {{quote.updatedAtText}}</text>
+        <text class="price-block__meta">{{quote.timezoneHint}}</text>
+        <text wx:if="{{errorMessage}}" class="price-block__warn">{{errorMessage}}</text>
+        <text wx:if="{{isMock}}" class="price-block__mock">模拟数据 · config/api.js 可切换</text>
+      </view>
+
+      <!-- 近一月走势 -->
+      <view class="panel anim-in anim-in--delay2">
+        <view class="panel__tabs">
+          <text class="panel__tab panel__tab--active">1M</text>
+        </view>
+        <price-chart
+          wx:if="{{history && history.points}}"
+          points="{{history.points}}"
+          direction="{{history.direction}}"
+          changePercentText="{{history.changePercentText}}"
+          rangeLabel="近 1 个月"
+        />
+        <view wx:else class="chart-fallback">
+          <text>{{historyHint || '走势加载中…'}}</text>
         </view>
       </view>
 
-      <view class="meta anim-in anim-in--delay3">
-        <view wx:if="{{errorMessage}}" class="meta__warn">
-          <text>{{errorMessage}}</text>
-        </view>
-
-        <view class="meta__status">
-          <view class="meta__dot meta__dot--{{quote.marketStatus}}"></view>
-          <text class="meta__status-text">{{quote.marketStatusText}}</text>
-          <text wx:if="{{quote.marketStatus === 'closed'}}" class="meta__closed-hint">显示最近收盘相关数据</text>
-        </view>
-
-        <text class="meta__time">更新于 {{quote.updatedAtText}}</text>
-        <text class="meta__tz">{{quote.timezoneHint}}</text>
-
-        <view wx:if="{{isMock}}" class="meta__mock">
-          <text>当前为模拟数据（config/api.js 可切换真实源）</text>
-        </view>
-      </view>
-
-      <!-- 下部次要区：VIX 半圆表盘（不抢点位主焦点） -->
-      <view wx:if="{{vix}}" class="vix-section anim-in anim-in--delay4">
-        <view class="vix-section__rule" aria-hidden="true"></view>
+      <!-- VIX -->
+      <view wx:if="{{vix}}" class="panel panel--vix anim-in anim-in--delay3">
         <vix-gauge
           value="{{vix.value}}"
           valueText="{{vix.valueText}}"
@@ -115,7 +99,6 @@
           <view class="action__icon-arrow"></view>
         </view>
         <text>{{refreshing ? '刷新中…' : '刷新行情'}}</text>
-        <view class="action__line"></view>
       </view>
     </block>
   </view>

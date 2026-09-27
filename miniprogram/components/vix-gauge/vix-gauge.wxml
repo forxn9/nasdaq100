@@ -1,33 +1,37 @@
 <view class="gauge {{ready ? 'gauge--ready' : ''}} {{available ? '' : 'gauge--empty'}}">
-  <view class="gauge__dial">
-    <canvas
-      canvas-id="vixDial"
-      class="gauge__canvas"
-      style="width: {{canvasW}}px; height: {{canvasH}}px;"
-    ></canvas>
-
-    <!-- §12.3：中心数值在圆心上方 -->
-    <view class="gauge__readout">
-      <text class="gauge__value">{{valueText}}</text>
+  <view class="gauge__head">
+    <view class="gauge__head-left">
+      <text class="gauge__kicker">Fear Index</text>
+      <text class="gauge__title">VIX 恐慌指数</text>
     </view>
-  </view>
-
-  <!-- §12.3 / §12.4：标题与着色等级在圆心下方 -->
-  <view class="gauge__caption">
-    <text class="gauge__title">VIX 恐慌指数</text>
     <text class="gauge__symbol">{{symbol || '^VIX'}}</text>
-    <text class="gauge__zone" style="color: {{zoneColor}};">{{zoneLabel}}</text>
-    <view wx:if="{{available && changeText}}" class="gauge__delta gauge__delta--{{direction}}">
-      <text>{{changeText}}</text>
-      <text class="gauge__delta-sep">·</text>
-      <text>{{changePercentText}}</text>
-    </view>
   </view>
 
-  <view class="gauge__legend" aria-hidden="true">
-    <view wx:for="{{legend}}" wx:key="key" class="gauge__legend-item">
-      <view class="gauge__legend-swatch" style="background: {{item.color}};"></view>
-      <text class="gauge__legend-text">{{item.label}}</text>
+  <view class="gauge__body">
+    <view class="gauge__dial">
+      <canvas
+        canvas-id="vixDial"
+        class="gauge__canvas"
+        style="width: {{canvasW}}px; height: {{canvasH}}px;"
+      ></canvas>
+      <view class="gauge__readout">
+        <text class="gauge__value">{{valueText}}</text>
+      </view>
+    </view>
+
+    <view class="gauge__meta">
+      <text class="gauge__zone" style="color: {{zoneColor}};">{{zoneLabel}}</text>
+      <view wx:if="{{available && changeText}}" class="gauge__delta gauge__delta--{{direction}}">
+        <text>{{changeText}}</text>
+        <text class="gauge__delta-sep">/</text>
+        <text>{{changePercentText}}</text>
+      </view>
+      <view class="gauge__legend">
+        <view wx:for="{{legend}}" wx:key="key" class="gauge__legend-item">
+          <view class="gauge__legend-swatch" style="background: {{item.color}};"></view>
+          <text class="gauge__legend-text">{{item.label}}</text>
+        </view>
+      </view>
     </view>
   </view>
 

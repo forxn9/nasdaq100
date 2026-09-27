@@ -1,33 +1,38 @@
 page {
-  --bg-top: #d9e3ee;
-  --bg-mid: #eef2f6;
-  --bg-bottom: #f7f8fa;
-  --nav-bg: #ffffff;
-  --ink: #152033;
-  --ink-muted: #5a6578;
-  --ink-subtle: #8a93a3;
-  --up: #c62828;
-  --down: #1b7f4a;
-  --flat: #5a6578;
-  --status-dot: #152033;
-  --status-closed: #9aa3b2;
-  --warning: #a15c00;
-  --skeleton: #d5dce6;
-  --divider: rgba(21, 32, 51, 0.08);
+  /* Binance market detail tokens */
+  --bn-bg: #0b0e11;
+  --bn-surface: #181a20;
+  --bn-surface-2: #1e2026;
+  --bn-border: #2b3139;
+  --bn-text: #eaecef;
+  --bn-text-secondary: #848e9c;
+  --bn-text-tertiary: #5e6673;
+  --bn-yellow: #f0b90b;
+  --bn-up: #0ecb81;
+  --bn-down: #f6465d;
+  --bn-flat: #848e9c;
+  --bn-skeleton: #2b3139;
 
-  /* VIX 表盘（UI §12.2） */
-  --vix-low: #1b7f4a;
-  --vix-mid: #c4a035;
-  --vix-high: #c45a12;
-  --vix-extreme: #c62828;
-  --gauge-steel: rgba(90, 101, 120, 0.55);
-  --gauge-track: rgba(21, 32, 51, 0.08);
-  --gauge-needle: #152033;
+  /* VIX zones kept semantic */
+  --vix-low: #0ecb81;
+  --vix-mid: #f0b90b;
+  --vix-high: #f0b90b;
+  --vix-extreme: #f6465d;
+
+  /* aliases used by older class hooks */
+  --up: var(--bn-up);
+  --down: var(--bn-down);
+  --flat: var(--bn-flat);
+  --ink: var(--bn-text);
+  --ink-muted: var(--bn-text-secondary);
+  --ink-subtle: var(--bn-text-tertiary);
+  --skeleton: var(--bn-skeleton);
+  --warning: #f0b90b;
 
   min-height: 100vh;
-  background: var(--bg-bottom);
-  color: var(--ink);
-  font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif;
+  background: var(--bn-bg);
+  color: var(--bn-text);
+  font-family: "Binance Plex", "Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif;
   box-sizing: border-box;
 }
 

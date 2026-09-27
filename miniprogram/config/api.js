@@ -1,11 +1,11 @@
 /**
- * 数据源配置（纳指 + VIX）
+ * 数据源配置（纳指报价 + 近一月历史 + VIX）
  *
- * 默认：`mock` —— 本地模拟数据，无需域名白名单，适合本地预览
- * 接入真实数据：将 mode 改为 `http`，填写后端/代理接口地址，
+ * 默认：`mock` —— 本地模拟，无需域名白名单
+ * 接入真实数据：将对应 mode 改为 `http`，填写接口地址，
  * 并在微信公众平台配置 request 合法域名。
  *
- * 纳指接口期望 JSON：
+ * 纳指报价 JSON：
  * {
  *   "name": "纳斯达克综合指数",
  *   "symbol": "^IXIC",
@@ -16,7 +16,14 @@
  *   "marketStatus": "open" | "closed"
  * }
  *
- * VIX 接口期望 JSON：
+ * 近一月历史 JSON：
+ * {
+ *   "symbol": "^IXIC",
+ *   "range": "1M",
+ *   "points": [{ "t": "2026-08-27T20:00:00.000Z", "c": 17120.12 }, ...]
+ * }
+ *
+ * VIX JSON：
  * {
  *   "symbol": "^VIX",
  *   "value": 18.42,
@@ -24,19 +31,20 @@
  *   "changePercent": -4.41,
  *   "updatedAt": "2026-09-27T20:00:00.000Z"
  * }
- *
- * 也可在同一接口返回 `vix` / `vixValue` 字段，由 services/vix.js 归一化。
  */
 module.exports = {
-  // 纳指
+  // 纳指实时
   mode: "mock", // "mock" | "http"
   httpUrl: "https://your-api.example.com/nasdaq/quote",
 
-  // VIX 恐慌指数（可与纳指共用 mode，也可单独覆盖）
-  vixMode: "mock", // "mock" | "http"（留空则跟随 mode）
+  // 近一月走势（留空 mode 则跟随 mode）
+  historyMode: "mock", // "mock" | "http"
+  historyHttpUrl: "https://your-api.example.com/nasdaq/history?range=1M",
+
+  // VIX 恐慌指数
+  vixMode: "mock", // "mock" | "http"
   vixHttpUrl: "https://your-api.example.com/vix/quote",
 
   timeoutMs: 8000,
-  // 交易中自动刷新间隔（PRD：20 秒）
   refreshIntervalMs: 20 * 1000,
 };
