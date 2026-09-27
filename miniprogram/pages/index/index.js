@@ -119,12 +119,25 @@ Page({
           vixHint: "",
         };
         if (vix) {
-          patch.vix = vix;
+          patch.vix = { ...vix, available: true };
           patch.vixHint =
             vix.source === "mock"
               ? "VIX 为模拟数据（config/api.js 可切换）"
               : "";
-        } else if (!this.data.vix) {
+        } else if (!this.data.vix || this.data.vix.available === false) {
+          // §12.4：无数据仍展示空表盘（无指针 / -- / 暂不可用）
+          patch.vix = {
+            value: 0,
+            valueText: "--",
+            zoneLabel: "暂不可用",
+            zoneColor: "#8A93A3",
+            changeText: "",
+            changePercentText: "",
+            direction: "flat",
+            symbol: "^VIX",
+            gaugeMax: 50,
+            available: false,
+          };
           patch.vixHint = "VIX 暂不可用";
         }
         this.setData(patch);

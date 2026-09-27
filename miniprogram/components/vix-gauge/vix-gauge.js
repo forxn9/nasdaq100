@@ -19,6 +19,8 @@ Component({
     symbol: { type: String, value: "^VIX" },
     hint: { type: String, value: "" },
     gaugeMax: { type: Number, value: VIX_GAUGE_MAX },
+    /** false 时不画指针（§12.4 无数据） */
+    available: { type: Boolean, value: true },
   },
 
   data: {
@@ -43,7 +45,7 @@ Component({
   },
 
   observers: {
-    "value, zoneColor, gaugeMax"() {
+    "value, zoneColor, gaugeMax, available"() {
       if (this._ready) this.drawGauge();
     },
   },
@@ -55,8 +57,9 @@ Component({
         .select(".gauge__dial")
         .boundingClientRect((rect) => {
           if (rect && rect.width) {
+            // §12.3：色弧半径约 112；画布留出外环与刻度字
             const w = Math.min(Math.max(Math.floor(rect.width), 240), 320);
-            const h = Math.round(w * 0.6);
+            const h = Math.round(w * 0.62);
             this.setData({ canvasW: w, canvasH: h }, () => {
               setTimeout(() => this.drawGauge(), 16);
             });
@@ -74,17 +77,22 @@ Component({
 
       // UI §12.2：左侧水平=0，右侧水平=180°；angleDeg = clamp(v,0,50)/50*180
       const cx = w / 2;
-      const cy = h * 0.78;
-      const radius = Math.min(w * 0.42, h * 0.72);
-      const trackWidth = Math.max(10, Math.round(radius * 0.16));
+      const cy = h * 0.82;
+      // 分区色弧半径约 112（按画布比例缩放）
+      const radius = Math.min(w * 0.4, h * 0.68);
+      const trackWidth = Math.max(10, Math.round(radius * (10 / 112)));
       const max = this.properties.gaugeMax || VIX_GAUGE_MAX;
-      const value = Math.min(Math.max(Number(this.properties.value) || 0, 0), max);
+      const available = this.properties.available !== false;
+      const rawValue = Number(this.properties.value);
+      const value = available
+        ? Math.min(Math.max(Number.isFinite(rawValue) ? rawValue : 0, 0), max)
+        : 0;
 
       ctx.clearRect(0, 0, w, h);
 
-      // 外钢环 + 内轨
-      this._arc(ctx, cx, cy, radius + trackWidth * 0.55, Math.PI, 0, STEEL, 1);
-      this._arc(ctx, cx, cy, radius - trackWidth * 0.55, Math.PI, 0, TRACK_BG, 1);
+      // 外钢环 + 内轨（§12.3）
+      this._arc(ctx, cx, cy, radius + trackWidth * 0.55 + 2, Math.PI, 0, STEEL, 1);
+      this._arc(ctx, cx, cy, radius - trackWidth * 0.55 - 2, Math.PI, 0, TRACK_BG, 1);
 
       // 底轨
       this._arc(ctx, cx, cy, radius, Math.PI, 0, TRACK_BG, trackWidth);
@@ -101,7 +109,7 @@ Component({
         if (tick > max) return;
         const ang = Math.PI + (tick / max) * Math.PI;
         const inner = radius - trackWidth * 0.55;
-        const outer = radius + trackWidth * 0.45;
+        const outer = radius + trackWidth * 0.45 + 4;
         ctx.beginPath();
         ctx.moveTo(cx + Math.cos(ang) * inner, cy + Math.sin(ang) * inner);
         ctx.lineTo(cx + Math.cos(ang) * outer, cy + Math.sin(ang) * outer);
@@ -109,8 +117,8 @@ Component({
         ctx.setLineWidth(1.2);
         ctx.stroke();
 
-        const lx = cx + Math.cos(ang) * (outer + 11);
-        const ly = cy + Math.sin(ang) * (outer + 11);
+        const lx = cx + Math.cos(ang) * (outer + 12);
+        const ly = cy + Math.sin(ang) * (outer + 12);
         ctx.setFillStyle("rgba(90, 101, 120, 0.95)");
         ctx.setFontSize(10);
         ctx.setTextAlign("center");
@@ -118,31 +126,33 @@ Component({
         ctx.fillText(String(tick), lx, ly);
       });
 
-      // 指针
-      const needleAng = Math.PI + (value / max) * Math.PI;
-      const tipR = radius - trackWidth * 0.1;
-      const backR = 10;
-      const tipX = cx + Math.cos(needleAng) * tipR;
-      const tipY = cy + Math.sin(needleAng) * tipR;
-      const leftAng = needleAng + Math.PI / 2;
-      const rightAng = needleAng - Math.PI / 2;
-      const bx1 = cx + Math.cos(leftAng) * 3.5;
-      const by1 = cy + Math.sin(leftAng) * 3.5;
-      const bx2 = cx + Math.cos(rightAng) * 3.5;
-      const by2 = cy + Math.sin(rightAng) * 3.5;
-      const backX = cx - Math.cos(needleAng) * backR;
-      const backY = cy - Math.sin(needleAng) * backR;
+      // §12.4：无数据不绘制指针
+      if (available) {
+        const needleAng = Math.PI + (value / max) * Math.PI;
+        const tipR = radius - trackWidth * 0.15;
+        const backR = 8;
+        const tipX = cx + Math.cos(needleAng) * tipR;
+        const tipY = cy + Math.sin(needleAng) * tipR;
+        const leftAng = needleAng + Math.PI / 2;
+        const rightAng = needleAng - Math.PI / 2;
+        const bx1 = cx + Math.cos(leftAng) * 2;
+        const by1 = cy + Math.sin(leftAng) * 2;
+        const bx2 = cx + Math.cos(rightAng) * 2;
+        const by2 = cy + Math.sin(rightAng) * 2;
+        const backX = cx - Math.cos(needleAng) * backR;
+        const backY = cy - Math.sin(needleAng) * backR;
 
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(bx1, by1);
-      ctx.lineTo(backX, backY);
-      ctx.lineTo(bx2, by2);
-      ctx.closePath();
-      ctx.setFillStyle(NEEDLE);
-      ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(bx1, by1);
+        ctx.lineTo(backX, backY);
+        ctx.lineTo(bx2, by2);
+        ctx.closePath();
+        ctx.setFillStyle(NEEDLE);
+        ctx.fill();
+      }
 
-      // 轴心
+      // 轴心：实心 r=3.5 + 外环 r=6
       ctx.beginPath();
       ctx.arc(cx, cy, 6, 0, Math.PI * 2);
       ctx.setStrokeStyle(STEEL);

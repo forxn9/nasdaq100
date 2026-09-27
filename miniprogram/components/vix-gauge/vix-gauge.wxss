@@ -13,31 +13,50 @@
   transform: translateY(0);
 }
 
-.gauge__head {
+.gauge__dial {
+  position: relative;
   width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.gauge__canvas {
+  display: block;
+}
+
+/* §12.3：数值叠在圆心上方 */
+.gauge__readout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 8rpx;
+  pointer-events: none;
 }
 
-.gauge__mark {
+.gauge__value {
+  font-size: 56rpx;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink, #152033);
+  font-variant-numeric: tabular-nums;
+  font-family: "DIN Alternate", "Menlo", "Courier New", monospace;
+  letter-spacing: -0.02em;
+}
+
+.gauge--empty .gauge__value {
+  color: var(--ink-subtle, #8a93a3);
+}
+
+.gauge__caption {
+  width: 100%;
+  margin-top: 4rpx;
   display: flex;
-  align-items: flex-end;
-  gap: 4rpx;
-  height: 20rpx;
-  margin-bottom: 12rpx;
-}
-
-.gauge__mark-bar {
-  width: 3rpx;
-  height: 18rpx;
-  background: rgba(21, 32, 51, 0.35);
-}
-
-.gauge__mark-bar--short {
-  height: 10rpx;
-  background: rgba(21, 32, 51, 0.22);
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .gauge__title {
@@ -56,48 +75,16 @@
   line-height: 1.3;
 }
 
-.gauge__dial {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 4rpx;
-}
-
-.gauge__canvas {
-  display: block;
-}
-
-.gauge__readout {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 8rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  pointer-events: none;
-}
-
-.gauge__value {
-  font-size: 48rpx;
-  font-weight: 700;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  font-family: "DIN Alternate", "Menlo", "Courier New", monospace;
-  letter-spacing: -0.02em;
-}
-
 .gauge__zone {
-  margin-top: 6rpx;
-  font-size: 22rpx;
-  font-weight: 500;
-  color: var(--ink-muted, #5a6578);
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  font-weight: 600;
   letter-spacing: 0.08em;
+  line-height: 1.3;
 }
 
 .gauge__delta {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   display: flex;
   align-items: baseline;
   gap: 10rpx;
@@ -126,7 +113,7 @@
 }
 
 .gauge__legend {
-  margin-top: 20rpx;
+  margin-top: 24rpx;
   width: 100%;
   max-width: 560rpx;
   display: flex;

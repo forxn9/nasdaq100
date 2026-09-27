@@ -1,13 +1,4 @@
-<view class="gauge {{ready ? 'gauge--ready' : ''}}">
-  <view class="gauge__head">
-    <view class="gauge__mark" aria-hidden="true">
-      <view class="gauge__mark-bar"></view>
-      <view class="gauge__mark-bar gauge__mark-bar--short"></view>
-    </view>
-    <text class="gauge__title">VIX 恐慌指数</text>
-    <text class="gauge__symbol">{{symbol || '^VIX'}}</text>
-  </view>
-
+<view class="gauge {{ready ? 'gauge--ready' : ''}} {{available ? '' : 'gauge--empty'}}">
   <view class="gauge__dial">
     <canvas
       canvas-id="vixDial"
@@ -15,18 +6,25 @@
       style="width: {{canvasW}}px; height: {{canvasH}}px;"
     ></canvas>
 
+    <!-- §12.3：中心数值在圆心上方 -->
     <view class="gauge__readout">
-      <text class="gauge__value" style="color: {{zoneColor}};">{{valueText}}</text>
-      <text class="gauge__zone">{{zoneLabel}}</text>
-      <view wx:if="{{changeText}}" class="gauge__delta gauge__delta--{{direction}}">
-        <text>{{changeText}}</text>
-        <text class="gauge__delta-sep">·</text>
-        <text>{{changePercentText}}</text>
-      </view>
+      <text class="gauge__value">{{valueText}}</text>
     </view>
   </view>
 
-  <view class="gauge__legend">
+  <!-- §12.3 / §12.4：标题与着色等级在圆心下方 -->
+  <view class="gauge__caption">
+    <text class="gauge__title">VIX 恐慌指数</text>
+    <text class="gauge__symbol">{{symbol || '^VIX'}}</text>
+    <text class="gauge__zone" style="color: {{zoneColor}};">{{zoneLabel}}</text>
+    <view wx:if="{{available && changeText}}" class="gauge__delta gauge__delta--{{direction}}">
+      <text>{{changeText}}</text>
+      <text class="gauge__delta-sep">·</text>
+      <text>{{changePercentText}}</text>
+    </view>
+  </view>
+
+  <view class="gauge__legend" aria-hidden="true">
     <view wx:for="{{legend}}" wx:key="key" class="gauge__legend-item">
       <view class="gauge__legend-swatch" style="background: {{item.color}};"></view>
       <text class="gauge__legend-text">{{item.label}}</text>

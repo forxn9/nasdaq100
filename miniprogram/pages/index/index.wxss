@@ -309,11 +309,40 @@
 }
 
 .action {
-  margin-top: 56rpx;
+  margin-top: 48rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 8rpx 16rpx;
+}
+
+/* §1.4：刷新圆形箭头图标（描边，无填充胶囊） */
+.action__icon {
+  position: relative;
+  width: 28rpx;
+  height: 28rpx;
+  margin-bottom: 10rpx;
+}
+
+.action__icon-ring {
+  position: absolute;
+  inset: 0;
+  border: 3rpx solid var(--ink);
+  border-right-color: transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.action__icon-arrow {
+  position: absolute;
+  top: -2rpx;
+  right: 2rpx;
+  width: 0;
+  height: 0;
+  border-left: 7rpx solid transparent;
+  border-right: 7rpx solid transparent;
+  border-bottom: 10rpx solid var(--ink);
+  transform: rotate(55deg);
 }
 
 .action text {
@@ -383,9 +412,47 @@
   color: var(--ink-subtle);
 }
 
+/* Loading：VIX 空弧骨架（§10） */
+.vix-skeleton {
+  width: 100%;
+  margin-top: 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vix-skeleton__rule {
+  width: 120rpx;
+  height: 2rpx;
+  margin-bottom: 36rpx;
+  background: rgba(21, 32, 51, 0.12);
+}
+
+.vix-skeleton__arc {
+  width: 420rpx;
+  height: 210rpx;
+  border: 20rpx solid var(--skeleton);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  opacity: 0.85;
+}
+
+.skeleton--vix-value {
+  margin-top: -40rpx;
+  width: 120rpx;
+  height: 40rpx;
+}
+
+.skeleton--vix-label {
+  margin-top: 20rpx;
+  width: 180rpx;
+  height: 24rpx;
+}
+
 .vix-section {
   width: 100%;
-  margin-top: 72rpx;
+  margin-top: 56rpx;
   padding-top: 8rpx;
   display: flex;
   flex-direction: column;

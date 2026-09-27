@@ -20,7 +20,7 @@
       <text class="brand__subtitle">NASDAQ Composite  ·  ^IXIC</text>
     </view>
 
-    <!-- Loading：骨架，不挡品牌名 -->
+    <!-- Loading：骨架（含 VIX 空弧占位） -->
     <view wx:if="{{status === 'loading'}}" class="hero">
       <view class="skeleton skeleton--price"></view>
       <view class="skeleton-row">
@@ -28,18 +28,29 @@
         <view class="skeleton skeleton--chg"></view>
       </view>
       <text class="loading-hint">行情加载中</text>
+
+      <view class="vix-skeleton" aria-hidden="true">
+        <view class="vix-skeleton__rule"></view>
+        <view class="vix-skeleton__arc"></view>
+        <view class="skeleton skeleton--vix-value"></view>
+        <view class="skeleton skeleton--vix-label"></view>
+      </view>
     </view>
 
     <!-- Error：无缓存 -->
     <view wx:elif="{{status === 'error'}}" class="error-panel anim-in">
       <text class="error-panel__text">{{errorMessage || '行情暂时无法获取，请稍后重试'}}</text>
       <view class="action action--retry" bindtap="onRetry">
+        <view class="action__icon" aria-hidden="true">
+          <view class="action__icon-ring"></view>
+          <view class="action__icon-arrow"></view>
+        </view>
         <text>重试</text>
         <view class="action__line"></view>
       </view>
     </view>
 
-    <!-- Success / 休市同布局 -->
+    <!-- Success / 休市同布局：点位主焦点 → 状态 → VIX → 刷新 -->
     <block wx:else>
       <view class="hero anim-in anim-in--delay1">
         <view class="hero__bezel" aria-hidden="true">
@@ -77,30 +88,35 @@
         </view>
       </view>
 
+      <!-- 下部次要区：VIX 半圆表盘（不抢点位主焦点） -->
+      <view wx:if="{{vix}}" class="vix-section anim-in anim-in--delay4">
+        <view class="vix-section__rule" aria-hidden="true"></view>
+        <vix-gauge
+          value="{{vix.value}}"
+          valueText="{{vix.valueText}}"
+          zoneLabel="{{vix.zoneLabel}}"
+          zoneColor="{{vix.zoneColor}}"
+          changeText="{{vix.changeText}}"
+          changePercentText="{{vix.changePercentText}}"
+          direction="{{vix.direction}}"
+          symbol="{{vix.symbol}}"
+          gaugeMax="{{vix.gaugeMax}}"
+          available="{{vix.available}}"
+          hint="{{vixHint}}"
+        />
+      </view>
+
       <view
         class="action {{refreshing ? 'action--disabled' : ''}}"
         bindtap="onRetry"
       >
+        <view class="action__icon" aria-hidden="true">
+          <view class="action__icon-ring"></view>
+          <view class="action__icon-arrow"></view>
+        </view>
         <text>{{refreshing ? '刷新中…' : '刷新行情'}}</text>
         <view class="action__line"></view>
       </view>
     </block>
-
-    <!-- 下部次要区：VIX 表盘（不抢点位主焦点） -->
-    <view wx:if="{{vix}}" class="vix-section anim-in anim-in--delay4">
-      <view class="vix-section__rule" aria-hidden="true"></view>
-      <vix-gauge
-        value="{{vix.value}}"
-        valueText="{{vix.valueText}}"
-        zoneLabel="{{vix.zoneLabel}}"
-        zoneColor="{{vix.zoneColor}}"
-        changeText="{{vix.changeText}}"
-        changePercentText="{{vix.changePercentText}}"
-        direction="{{vix.direction}}"
-        symbol="{{vix.symbol}}"
-        gaugeMax="{{vix.gaugeMax}}"
-        hint="{{vixHint}}"
-      />
-    </view>
   </view>
 </view>

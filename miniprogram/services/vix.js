@@ -85,6 +85,7 @@ function normalizeVix(raw) {
     needleRatio,
     gaugeMax: VIX_GAUGE_MAX,
     zones: VIX_ZONES,
+    available: true,
     source: raw.source || "unknown",
   };
 }
