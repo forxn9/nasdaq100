@@ -57,17 +57,15 @@
 
       <view class="divider"></view>
 
-      <!-- 近一月走势 -->
+      <!-- 近十年走势 + 底部区间 scrubber -->
       <view class="chart-block anim-in anim-in--delay2">
         <price-chart
           wx:if="{{history && history.points}}"
           points="{{history.points}}"
-          direction="{{history.direction}}"
-          changePercentText="{{history.changePercentText}}"
-          rangeLabel="近一个月"
+          rangeLabel="近十年"
         />
         <view wx:else class="chart-fallback">
-          <text class="chart-fallback__label">近一个月</text>
+          <text class="chart-fallback__label">近十年</text>
           <text>{{historyHint || '暂无走势'}}</text>
         </view>
       </view>

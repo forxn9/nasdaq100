@@ -1,17 +1,23 @@
 const apiConfig = require("../config/api");
-const { toNumber, formatPercent, directionOf } = require("../utils/format");
+const { toNumber, formatPercent, formatChange, directionOf } = require("../utils/format");
 
 /**
- * 近一月日线序列（Binance 详情页主图）
+ * 近约 10 年日线序列（默认全窗；组件内可滑动选区间）
  *
  * HTTP 期望 JSON：
  * {
  *   "symbol": "^IXIC",
- *   "range": "1M",
- *   "points": [{ "t": "2026-08-27T20:00:00.000Z", "c": 17120.12 }, ...]
+ *   "range": "10Y",
+ *   "resolution": "1d",
+ *   "points": [{ "t": "2016-09-27T20:00:00.000Z", "c": 5312.00 }, ...]
  * }
  * 或 points 为 [timestampMs, close] 二元组。
  */
+
+const DEFAULT_RANGE = "10Y";
+/** 约 10 个自然年的交易日（跳过周末，~261/年） */
+const YEARS = 10;
+const TRADING_DAYS = Math.round(YEARS * 365.25 * 5 / 7);
 
 function normalizePoint(raw) {
   if (Array.isArray(raw) && raw.length >= 2) {
@@ -42,6 +48,7 @@ function summarizeSeries(points) {
       last: null,
       change: 0,
       changePercent: 0,
+      changeText: "--",
       changePercentText: "--",
       direction: "flat",
       high: null,
@@ -64,11 +71,29 @@ function summarizeSeries(points) {
     last,
     change,
     changePercent,
+    changeText: formatChange(change),
     changePercentText: formatPercent(changePercent),
     direction: directionOf(change),
     high,
     low,
   };
+}
+
+function sliceAndSummarize(points, startIndex, endIndex) {
+  if (!points || !points.length) return summarizeSeries([]);
+  const last = points.length - 1;
+  let s = Math.max(0, Math.min(last, Math.floor(startIndex)));
+  let e = Math.max(0, Math.min(last, Math.floor(endIndex)));
+  if (e < s) {
+    const tmp = s;
+    s = e;
+    e = tmp;
+  }
+  if (e === s && last > 0) {
+    if (e < last) e += 1;
+    else if (s > 0) s -= 1;
+  }
+  return summarizeSeries(points.slice(s, e + 1));
 }
 
 function normalizeHistory(raw) {
@@ -86,37 +111,53 @@ function normalizeHistory(raw) {
   const summary = summarizeSeries(points);
   return {
     symbol: raw.symbol || "^IXIC",
-    range: raw.range || "1M",
+    range: raw.range || DEFAULT_RANGE,
+    resolution: raw.resolution || "1d",
     source: raw.source || "unknown",
     ...summary,
   };
 }
 
-/** 约 22 个交易日的 mock 日线，收于当前点位附近 */
-function fetchMockHistory(anchorPrice) {
-  const end = Number.isFinite(Number(anchorPrice))
-    ? Number(anchorPrice)
-    : 17823.45;
-  const days = 22;
-  const points = [];
-  let price = end * 0.965;
-  const now = Date.now();
-  // 回溯约 30 自然日，跳过周末
-  let cursor = new Date(now);
+/** 回溯交易日日期（UTC），跳过周末 */
+function collectTradingDates(count, endMs) {
   const dates = [];
-  while (dates.length < days) {
+  let cursor = new Date(endMs);
+  while (dates.length < count) {
     cursor = new Date(cursor.getTime() - 24 * 60 * 60 * 1000);
     const d = cursor.getUTCDay();
     if (d === 0 || d === 6) continue;
     dates.unshift(new Date(cursor));
   }
+  return dates;
+}
+
+/**
+ * 约 10 年日线 mock（~2520 个交易日），收于当前点位附近。
+ * 轨迹：长期上飘 + 多周期波动，模拟纳指风格涨跌。
+ */
+function fetchMockHistory(anchorPrice) {
+  const end = Number.isFinite(Number(anchorPrice))
+    ? Number(anchorPrice)
+    : 17823.45;
+  const days = TRADING_DAYS;
+  const dates = collectTradingDates(days, Date.now());
+  const startPrice = end * 0.32;
+  const points = [];
+  let price = startPrice;
 
   for (let i = 0; i < days; i += 1) {
     const progress = i / (days - 1);
-    const drift = (end - price) * (0.08 + progress * 0.12);
-    const wave = Math.sin(i * 0.7) * end * 0.006;
-    const noise = (Math.sin(i * 2.3 + 1.1) + Math.cos(i * 1.1)) * end * 0.002;
-    price = Math.max(end * 0.92, price + drift + wave + noise);
+    const drift = (end - startPrice) * (0.00035 + progress * 0.00015);
+    const wave =
+      Math.sin(i * 0.045) * end * 0.012 +
+      Math.sin(i * 0.011) * end * 0.028 +
+      Math.sin(i * 0.0035) * end * 0.045;
+    const noise =
+      (Math.sin(i * 1.7 + 0.4) + Math.cos(i * 0.9 + 1.2)) * end * 0.0018;
+    // 偶发回撤
+    const shock =
+      i % 317 === 0 && i > 0 ? -end * 0.04 : i % 503 === 0 ? end * 0.025 : 0;
+    price = Math.max(end * 0.18, price + drift + wave * 0.002 + noise + shock);
     if (i === days - 1) price = end;
     points.push({
       t: new Date(
@@ -136,7 +177,8 @@ function fetchMockHistory(anchorPrice) {
   return Promise.resolve(
     normalizeHistory({
       symbol: "^IXIC",
-      range: "1M",
+      range: DEFAULT_RANGE,
+      resolution: "1d",
       points,
       source: "mock",
     })
@@ -180,15 +222,24 @@ function resolveHistoryMode() {
   return apiConfig.mode || "mock";
 }
 
-function fetchMonthHistory(anchorPrice) {
+/** 拉取近约 10 年历史（默认 mock / 可配置 http） */
+function fetchHistory(anchorPrice) {
   if (resolveHistoryMode() === "http") {
     return requestHttpHistory();
   }
   return fetchMockHistory(anchorPrice);
 }
 
+/** @deprecated 使用 fetchHistory */
+function fetchMonthHistory(anchorPrice) {
+  return fetchHistory(anchorPrice);
+}
+
 module.exports = {
+  fetchHistory,
   fetchMonthHistory,
   normalizeHistory,
   summarizeSeries,
+  sliceAndSummarize,
+  DEFAULT_RANGE,
 };

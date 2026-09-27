@@ -1,7 +1,11 @@
 <view class="chart {{ready ? 'chart--ready' : ''}}">
   <view class="chart__head">
     <text class="chart__range">{{rangeLabel}}</text>
-    <text class="chart__chg chart__chg--{{direction}}">{{changePercentText}}</text>
+    <view class="chart__chg chart__chg--{{direction}}">
+      <text>{{changeText}}</text>
+      <text class="chart__chg-sep"></text>
+      <text>{{changePercentText}}</text>
+    </view>
   </view>
   <view class="chart__canvas-wrap">
     <canvas
@@ -17,4 +21,28 @@
     <text>{{startLabel}}</text>
     <text>{{endLabel}}</text>
   </view>
+
+  <!-- Binance 式底部 range scrubber：双滑块 + 遮罩 -->
+  <view
+    class="chart__scrub {{dragging ? 'chart__scrub--active' : ''}}"
+    wx:if="{{points && points.length > 1}}"
+    catchtouchstart="onScrubStart"
+    catchtouchmove="onScrubMove"
+    catchtouchend="onScrubEnd"
+    catchtouchcancel="onScrubEnd"
+  >
+    <canvas
+      canvas-id="scrubChart"
+      class="chart__scrub-canvas"
+      style="width: {{scrubW}}px; height: {{scrubH}}px;"
+    ></canvas>
+    <view
+      class="chart__scrub-window"
+      style="left: {{windowLeft}}px; width: {{windowWidth}}px;"
+    >
+      <view class="chart__scrub-handle chart__scrub-handle--start"></view>
+      <view class="chart__scrub-handle chart__scrub-handle--end"></view>
+    </view>
+  </view>
+  <text class="chart__scrub-hint" wx:if="{{points && points.length > 1}}">拖动两端选择区间</text>
 </view>

@@ -1,7 +1,7 @@
 const apiConfig = require("../../config/api");
 const { fetchNasdaqQuote } = require("../../services/nasdaq");
 const { fetchVixQuote } = require("../../services/vix");
-const { fetchMonthHistory } = require("../../services/history");
+const { fetchHistory } = require("../../services/history");
 
 Page({
   data: {
@@ -111,7 +111,7 @@ Page({
             console.warn("[vix]", err && err.message ? err.message : err);
             return null;
           }),
-          fetchMonthHistory(quote.price).catch((err) => {
+          fetchHistory(quote.price).catch((err) => {
             console.warn("[history]", err && err.message ? err.message : err);
             return null;
           }),
@@ -156,7 +156,7 @@ Page({
           patch.history = history;
         } else if (!this.data.history) {
           patch.history = null;
-          patch.historyHint = "近一月走势暂不可用";
+          patch.historyHint = "近十年走势暂不可用";
         }
 
         this.setData(patch);
