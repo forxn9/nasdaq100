@@ -322,9 +322,13 @@ Component({
           ctx.lineTo(w - padR, y);
           ctx.setStrokeStyle(GRID);
           ctx.setLineWidth(1);
-          ctx.setLineDash([3, 4]);
+          if (typeof ctx.setLineDash === "function") {
+            ctx.setLineDash([3, 4]);
+          }
           ctx.stroke();
-          ctx.setLineDash([]);
+          if (typeof ctx.setLineDash === "function") {
+            ctx.setLineDash([]);
+          }
         }
       }
 
