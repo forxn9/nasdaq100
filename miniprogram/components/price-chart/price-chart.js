@@ -1,6 +1,7 @@
-const UP = "#0ECB81";
-const DOWN = "#F6465D";
-const GRID = "rgba(132, 142, 156, 0.12)";
+/** §6：红涨绿跌 */
+const UP = "#F6465D";
+const DOWN = "#0ECB81";
+const GRID = "rgba(255, 255, 255, 0.06)";
 const LABEL = "#5E6673";
 
 function shortDate(iso) {
@@ -133,8 +134,8 @@ Component({
       ctx.closePath();
       ctx.setFillStyle(
         this.properties.direction === "down"
-          ? "rgba(246, 70, 93, 0.12)"
-          : "rgba(14, 203, 129, 0.12)"
+          ? "rgba(14, 203, 129, 0.16)"
+          : "rgba(246, 70, 93, 0.16)"
       );
       ctx.fill();
 

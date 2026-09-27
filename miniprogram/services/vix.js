@@ -11,18 +11,19 @@ const { isRegularSessionOpen } = require("../utils/market");
 
 const VIX_NAME = "VIX 恐慌指数";
 const VIX_SYMBOL = "^VIX";
-/** 表盘显示量程上限（UI §12.2：半圆 0–50；真实值可 >50，指针贴右端） */
+/** 色阶条量程上限（UI §6 / §12：0–50；真实值可 >50，标记贴右端） */
 const VIX_GAUGE_MAX = 50;
 
 /**
- * 恐慌分区（对齐 UI §12.2）
- * 0–15 低恐慌 #1B7F4A · 15–25 中等 #C4A035 · 25–35 高恐慌 #C45A12 · ≥35 极端 #C62828
+ * 恐慌分区（对齐 UI §6）
+ * 0–15 低恐慌 #0ECB81 · 15–25 中等 #F0B90B · 25–35 高恐慌 #F0A030 · ≥35 极端 #F6465D
+ * 分段宽度比例 15:10:10:15
  */
 const VIX_ZONES = [
-  { min: 0, max: 15, key: "low", label: "低恐慌", color: "#1B7F4A" },
-  { min: 15, max: 25, key: "mid", label: "中等", color: "#C4A035" },
-  { min: 25, max: 35, key: "high", label: "高恐慌", color: "#C45A12" },
-  { min: 35, max: VIX_GAUGE_MAX, key: "extreme", label: "极端", color: "#C62828" },
+  { min: 0, max: 15, key: "low", label: "低恐慌", color: "#0ECB81" },
+  { min: 15, max: 25, key: "mid", label: "中等", color: "#F0B90B" },
+  { min: 25, max: 35, key: "high", label: "高恐慌", color: "#F0A030" },
+  { min: 35, max: VIX_GAUGE_MAX, key: "extreme", label: "极端", color: "#F6465D" },
 ];
 
 /** if (v < 15) low; else if (v < 25) mid; else if (v < 35) high; else extreme */
@@ -64,7 +65,7 @@ function normalizeVix(raw) {
     raw.updatedAt || raw.updated_at || raw.time || new Date().toISOString();
   const zone = zoneOf(value);
   const clamped = Math.min(Math.max(value, 0), VIX_GAUGE_MAX);
-  const needleRatio = clamped / VIX_GAUGE_MAX;
+  const markerRatio = clamped / VIX_GAUGE_MAX;
   const timeParts = formatUpdatedParts(updatedAt);
 
   return {
@@ -82,7 +83,8 @@ function normalizeVix(raw) {
     zoneKey: zone.key,
     zoneLabel: zone.label,
     zoneColor: zone.color,
-    needleRatio,
+    markerRatio,
+    needleRatio: markerRatio,
     gaugeMax: VIX_GAUGE_MAX,
     zones: VIX_ZONES,
     available: true,

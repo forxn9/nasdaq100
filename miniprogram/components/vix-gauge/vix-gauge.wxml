@@ -1,39 +1,46 @@
-<view class="gauge {{ready ? 'gauge--ready' : ''}} {{available ? '' : 'gauge--empty'}}">
-  <view class="gauge__head">
-    <view class="gauge__head-left">
-      <text class="gauge__kicker">Fear Index</text>
-      <text class="gauge__title">VIX 恐慌指数</text>
+<view class="vix {{available ? '' : 'vix--empty'}}">
+  <!-- §3.5 / §12：标签 · 数值 · 等级 -->
+  <view class="vix__row">
+    <view class="vix__left">
+      <text class="vix__label">VIX 恐慌指数</text>
+      <text class="vix__sub">CBOE VIX</text>
     </view>
-    <text class="gauge__symbol">{{symbol || '^VIX'}}</text>
-  </view>
-
-  <view class="gauge__body">
-    <view class="gauge__dial">
-      <canvas
-        canvas-id="vixDial"
-        class="gauge__canvas"
-        style="width: {{canvasW}}px; height: {{canvasH}}px;"
-      ></canvas>
-      <view class="gauge__readout">
-        <text class="gauge__value">{{valueText}}</text>
-      </view>
-    </view>
-
-    <view class="gauge__meta">
-      <text class="gauge__zone" style="color: {{zoneColor}};">{{zoneLabel}}</text>
-      <view wx:if="{{available && changeText}}" class="gauge__delta gauge__delta--{{direction}}">
-        <text>{{changeText}}</text>
-        <text class="gauge__delta-sep">/</text>
-        <text>{{changePercentText}}</text>
-      </view>
-      <view class="gauge__legend">
-        <view wx:for="{{legend}}" wx:key="key" class="gauge__legend-item">
-          <view class="gauge__legend-swatch" style="background: {{item.color}};"></view>
-          <text class="gauge__legend-text">{{item.label}}</text>
-        </view>
-      </view>
+    <view class="vix__right">
+      <text class="vix__value">{{valueText}}</text>
+      <text class="vix__level" style="color: {{zoneColor}};">{{zoneLabel}}</text>
     </view>
   </view>
 
-  <text wx:if="{{hint}}" class="gauge__hint">{{hint}}</text>
+  <!-- 横向四色色阶条 + 当前值标记 -->
+  <view class="vix__track-wrap">
+    <view class="vix__track {{available ? '' : 'vix__track--dim'}}">
+      <view
+        wx:for="{{segments}}"
+        wx:key="key"
+        class="vix__seg"
+        style="flex: {{item.flex}}; background: {{item.color}};"
+      ></view>
+    </view>
+    <view
+      wx:if="{{available}}"
+      class="vix__marker"
+      style="left: {{markerPercent}}%;"
+    >
+      <view class="vix__marker-tri"></view>
+      <view class="vix__marker-line"></view>
+    </view>
+  </view>
+
+  <view class="vix__ticks">
+    <text wx:for="{{ticks}}" wx:key="*this" class="vix__tick">{{item}}</text>
+  </view>
+
+  <view class="vix__legend">
+    <view wx:for="{{segments}}" wx:key="key" class="vix__legend-item">
+      <view class="vix__legend-dot" style="background: {{item.color}};"></view>
+      <text>{{item.short}}</text>
+    </view>
+  </view>
+
+  <text wx:if="{{hint}}" class="vix__hint">{{hint}}</text>
 </view>

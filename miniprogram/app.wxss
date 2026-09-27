@@ -1,38 +1,56 @@
 page {
-  /* Binance market detail tokens */
-  --bn-bg: #0b0e11;
-  --bn-surface: #181a20;
-  --bn-surface-2: #1e2026;
-  --bn-border: #2b3139;
-  --bn-text: #eaecef;
-  --bn-text-secondary: #848e9c;
-  --bn-text-tertiary: #5e6673;
-  --bn-yellow: #f0b90b;
-  --bn-up: #0ecb81;
-  --bn-down: #f6465d;
-  --bn-flat: #848e9c;
-  --bn-skeleton: #2b3139;
+  /* §6 Binance 深色色板 */
+  --bg: #0b0e11;
+  --bg-elevated: #12161c;
+  --nav-bg: #0b0e11;
+  --divider: rgba(255, 255, 255, 0.06);
+  --skeleton: #1e2329;
 
-  /* VIX zones kept semantic */
-  --vix-low: #0ecb81;
-  --vix-mid: #f0b90b;
-  --vix-high: #f0b90b;
-  --vix-extreme: #f6465d;
+  --ink: #eaecef;
+  --ink-muted: #848e9c;
+  --ink-subtle: #5e6673;
 
-  /* aliases used by older class hooks */
-  --up: var(--bn-up);
-  --down: var(--bn-down);
-  --flat: var(--bn-flat);
-  --ink: var(--bn-text);
-  --ink-muted: var(--bn-text-secondary);
-  --ink-subtle: var(--bn-text-tertiary);
-  --skeleton: var(--bn-skeleton);
+  /* 内地红涨绿跌 */
+  --up: #f6465d;
+  --down: #0ecb81;
+  --flat: #848e9c;
+
+  --accent: #f0b90b;
+  --status-dot: #0ecb81;
+  --status-closed: #5e6673;
   --warning: #f0b90b;
 
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-line-up: #f6465d;
+  --chart-line-down: #0ecb81;
+  --chart-fill-up: rgba(246, 70, 93, 0.16);
+  --chart-fill-down: rgba(14, 203, 129, 0.16);
+
+  /* VIX 色阶 §6 */
+  --vix-low: #0ecb81;
+  --vix-mid: #f0b90b;
+  --vix-high: #f0a030;
+  --vix-extreme: #f6465d;
+  --vix-marker: #eaecef;
+
+  /* 兼容旧别名 */
+  --bn-bg: var(--bg);
+  --bn-surface: var(--bg-elevated);
+  --bn-surface-2: #1e2329;
+  --bn-border: var(--divider);
+  --bn-text: var(--ink);
+  --bn-text-secondary: var(--ink-muted);
+  --bn-text-tertiary: var(--ink-subtle);
+  --bn-yellow: var(--accent);
+  --bn-up: var(--up);
+  --bn-down: var(--down);
+  --bn-flat: var(--flat);
+  --bn-skeleton: var(--skeleton);
+
   min-height: 100vh;
-  background: var(--bn-bg);
-  color: var(--bn-text);
-  font-family: "Binance Plex", "Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif;
   box-sizing: border-box;
 }
 
