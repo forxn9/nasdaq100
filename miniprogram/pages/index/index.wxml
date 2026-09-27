@@ -1,0 +1,101 @@
+<view class="page">
+  <view class="stage">
+    <!-- Loading -->
+    <block wx:if="{{status === 'loading'}}">
+      <view class="sym-block">
+        <view class="skeleton skeleton--sym"></view>
+        <view class="skeleton skeleton--sub"></view>
+      </view>
+      <view class="skeleton skeleton--price"></view>
+      <view class="skeleton-row">
+        <view class="skeleton skeleton--chg"></view>
+        <view class="skeleton skeleton--chg"></view>
+      </view>
+      <view class="skeleton skeleton--chart"></view>
+      <view class="skeleton skeleton--vix"></view>
+      <text class="loading-hint">行情加载中</text>
+    </block>
+
+    <!-- Error -->
+    <view wx:elif="{{status === 'error'}}" class="error-panel">
+      <text class="error-panel__text">{{errorMessage || '行情暂时无法获取，请稍后重试'}}</text>
+      <view class="action" bindtap="onRetry">
+        <view class="action__icon" aria-hidden="true">
+          <view class="action__icon-ring"></view>
+          <view class="action__icon-arrow"></view>
+        </view>
+        <text>重试</text>
+      </view>
+    </view>
+
+    <!-- Success / 休市 -->
+    <block wx:else>
+      <view class="sym-block anim-in">
+        <text class="sym-block__name">{{quote.name}}</text>
+        <text class="sym-block__sub">{{quote.subtitle}}</text>
+      </view>
+
+      <view class="price-block anim-in anim-in--delay1">
+        <text
+          class="price-block__value {{quote.marketStatus === 'open' ? 'price-block__value--live' : ''}} {{flashPrice ? 'price-block__value--flash' : ''}}"
+        >{{quote.priceText}}</text>
+        <view class="price-block__delta price-block__delta--{{quote.direction}}">
+          <text>{{quote.changeText}}</text>
+          <text class="price-block__sep"></text>
+          <text>{{quote.changePercentText}}</text>
+        </view>
+        <view class="price-block__meta-row">
+          <view class="price-block__dot price-block__dot--{{quote.marketStatus}}"></view>
+          <text>{{quote.marketStatusText}}</text>
+          <text class="price-block__meta-sep">·</text>
+          <text>更新于 {{quote.updatedAtText}}</text>
+        </view>
+        <text class="price-block__tz">{{quote.timezoneHint}}</text>
+        <text wx:if="{{errorMessage}}" class="price-block__warn">{{errorMessage}}</text>
+        <text wx:if="{{isMock}}" class="price-block__mock">模拟数据 · config/api.js 可切换</text>
+      </view>
+
+      <view class="divider"></view>
+
+      <!-- 近十年走势 + 底部区间 scrubber -->
+      <view class="chart-block anim-in anim-in--delay2">
+        <price-chart
+          wx:if="{{history && history.points}}"
+          points="{{history.points}}"
+          rangeLabel="近十年"
+        />
+        <view wx:else class="chart-fallback">
+          <text class="chart-fallback__label">近十年</text>
+          <text>{{historyHint || '暂无走势'}}</text>
+        </view>
+      </view>
+
+      <view class="divider"></view>
+
+      <!-- VIX：指标行 + 横向色阶条（非半圆） -->
+      <view wx:if="{{vix}}" class="vix-block anim-in anim-in--delay3">
+        <vix-gauge
+          value="{{vix.value}}"
+          valueText="{{vix.valueText}}"
+          zoneLabel="{{vix.zoneLabel}}"
+          zoneColor="{{vix.zoneColor}}"
+          symbol="{{vix.symbol}}"
+          gaugeMax="{{vix.gaugeMax}}"
+          available="{{vix.available}}"
+          hint="{{vixHint}}"
+        />
+      </view>
+
+      <view
+        class="action {{refreshing ? 'action--disabled' : ''}}"
+        bindtap="onRetry"
+      >
+        <view class="action__icon" aria-hidden="true">
+          <view class="action__icon-ring"></view>
+          <view class="action__icon-arrow"></view>
+        </view>
+        <text>{{refreshing ? '刷新中…' : '刷新行情'}}</text>
+      </view>
+    </block>
+  </view>
+</view>

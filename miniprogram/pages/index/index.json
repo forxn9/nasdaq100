@@ -1,0 +1,12 @@
+{
+  "usingComponents": {
+    "vix-gauge": "/components/vix-gauge/vix-gauge",
+    "price-chart": "/components/price-chart/price-chart"
+  },
+  "navigationBarTitleText": "纳斯达克指数",
+  "navigationBarBackgroundColor": "#0B0E11",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "light",
+  "backgroundColor": "#0B0E11"
+}

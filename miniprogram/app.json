@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "纳斯达克指数",
+    "navigationBarBackgroundColor": "#0B0E11",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0B0E11",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,156 @@
+.vix {
+  width: 100%;
+}
+
+.vix__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.vix__left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vix__label {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: var(--ink-muted, #848e9c);
+  line-height: 1.3;
+}
+
+.vix__sub {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--ink-subtle, #5e6673);
+  line-height: 1.3;
+}
+
+.vix__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.vix__value {
+  font-size: 44rpx;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink, #eaecef);
+  font-variant-numeric: tabular-nums;
+  font-family: "DIN Alternate", "Menlo", "Courier New", monospace;
+}
+
+.vix--empty .vix__value {
+  color: var(--ink-subtle, #5e6673);
+}
+
+.vix__level {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.vix__track-wrap {
+  position: relative;
+  margin-top: 28rpx;
+  height: 28rpx;
+  display: flex;
+  align-items: center;
+}
+
+.vix__track {
+  width: 100%;
+  height: 14rpx;
+  border-radius: 4rpx;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+.vix__track--dim {
+  opacity: 0.4;
+}
+
+.vix__seg {
+  height: 100%;
+  min-width: 0;
+}
+
+.vix__marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.vix__marker-tri {
+  width: 0;
+  height: 0;
+  border-left: 7rpx solid transparent;
+  border-right: 7rpx solid transparent;
+  border-top: 9rpx solid var(--vix-marker, #eaecef);
+  margin-bottom: -2rpx;
+}
+
+.vix__marker-line {
+  width: 4rpx;
+  flex: 1;
+  min-height: 20rpx;
+  background: var(--vix-marker, #eaecef);
+  border-radius: 2rpx;
+}
+
+.vix__ticks {
+  margin-top: 10rpx;
+  display: flex;
+  justify-content: space-between;
+}
+
+.vix__tick {
+  font-size: 20rpx;
+  color: var(--ink-subtle, #5e6673);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.vix__legend {
+  margin-top: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx 20rpx;
+}
+
+.vix__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 20rpx;
+  color: var(--ink-subtle, #5e6673);
+}
+
+.vix__legend-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.vix__hint {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 20rpx;
+  color: var(--ink-subtle, #5e6673);
+  line-height: 1.4;
+}

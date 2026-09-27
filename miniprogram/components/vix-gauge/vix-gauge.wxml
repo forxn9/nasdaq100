@@ -1,0 +1,46 @@
+<view class="vix {{available ? '' : 'vix--empty'}}">
+  <!-- §3.5 / §12：标签 · 数值 · 等级 -->
+  <view class="vix__row">
+    <view class="vix__left">
+      <text class="vix__label">VIX 恐慌指数</text>
+      <text class="vix__sub">CBOE VIX</text>
+    </view>
+    <view class="vix__right">
+      <text class="vix__value">{{valueText}}</text>
+      <text class="vix__level" style="color: {{zoneColor}};">{{zoneLabel}}</text>
+    </view>
+  </view>
+
+  <!-- 横向四色色阶条 + 当前值标记 -->
+  <view class="vix__track-wrap">
+    <view class="vix__track {{available ? '' : 'vix__track--dim'}}">
+      <view
+        wx:for="{{segments}}"
+        wx:key="key"
+        class="vix__seg"
+        style="flex: {{item.flex}}; background: {{item.color}};"
+      ></view>
+    </view>
+    <view
+      wx:if="{{available}}"
+      class="vix__marker"
+      style="left: {{markerPercent}}%;"
+    >
+      <view class="vix__marker-tri"></view>
+      <view class="vix__marker-line"></view>
+    </view>
+  </view>
+
+  <view class="vix__ticks">
+    <text wx:for="{{ticks}}" wx:key="*this" class="vix__tick">{{item}}</text>
+  </view>
+
+  <view class="vix__legend">
+    <view wx:for="{{segments}}" wx:key="key" class="vix__legend-item">
+      <view class="vix__legend-dot" style="background: {{item.color}};"></view>
+      <text>{{item.short}}</text>
+    </view>
+  </view>
+
+  <text wx:if="{{hint}}" class="vix__hint">{{hint}}</text>
+</view>

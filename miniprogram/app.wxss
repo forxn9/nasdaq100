@@ -1,0 +1,66 @@
+page {
+  /* §6 Binance 深色色板 */
+  --bg: #0b0e11;
+  --bg-elevated: #12161c;
+  --nav-bg: #0b0e11;
+  --divider: rgba(255, 255, 255, 0.06);
+  --skeleton: #1e2329;
+
+  --ink: #eaecef;
+  --ink-muted: #848e9c;
+  --ink-subtle: #5e6673;
+
+  /* 内地红涨绿跌 */
+  --up: #f6465d;
+  --down: #0ecb81;
+  --flat: #848e9c;
+
+  --accent: #f0b90b;
+  --status-dot: #0ecb81;
+  --status-closed: #5e6673;
+  --warning: #f0b90b;
+
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-line-up: #f6465d;
+  --chart-line-down: #0ecb81;
+  --chart-fill-up: rgba(246, 70, 93, 0.16);
+  --chart-fill-down: rgba(14, 203, 129, 0.16);
+  --scrubber-track: #1e2329;
+  --scrubber-mask: rgba(11, 14, 17, 0.72);
+  --scrubber-window: rgba(240, 185, 11, 0.18);
+  --scrubber-handle: #eaecef;
+  --scrubber-mini: #5e6673;
+
+  /* VIX 色阶 §6 */
+  --vix-low: #0ecb81;
+  --vix-mid: #f0b90b;
+  --vix-high: #f0a030;
+  --vix-extreme: #f6465d;
+  --vix-marker: #eaecef;
+
+  /* 兼容旧别名 */
+  --bn-bg: var(--bg);
+  --bn-surface: var(--bg-elevated);
+  --bn-surface-2: #1e2329;
+  --bn-border: var(--divider);
+  --bn-text: var(--ink);
+  --bn-text-secondary: var(--ink-muted);
+  --bn-text-tertiary: var(--ink-subtle);
+  --bn-yellow: var(--accent);
+  --bn-up: var(--up);
+  --bn-down: var(--down);
+  --bn-flat: var(--flat);
+  --bn-skeleton: var(--skeleton);
+
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif;
+  box-sizing: border-box;
+}
+
+view,
+text,
+button {
+  box-sizing: border-box;
+}
