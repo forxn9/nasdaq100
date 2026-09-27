@@ -1,0 +1,29 @@
+page {
+  --bg-top: #d9e3ee;
+  --bg-mid: #eef2f6;
+  --bg-bottom: #f7f8fa;
+  --nav-bg: #ffffff;
+  --ink: #152033;
+  --ink-muted: #5a6578;
+  --ink-subtle: #8a93a3;
+  --up: #c62828;
+  --down: #1b7f4a;
+  --flat: #5a6578;
+  --status-dot: #152033;
+  --status-closed: #9aa3b2;
+  --warning: #a15c00;
+  --skeleton: #d5dce6;
+  --divider: rgba(21, 32, 51, 0.08);
+
+  min-height: 100vh;
+  background: var(--bg-bottom);
+  color: var(--ink);
+  font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", sans-serif;
+  box-sizing: border-box;
+}
+
+view,
+text,
+button {
+  box-sizing: border-box;
+}

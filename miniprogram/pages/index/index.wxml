@@ -1,0 +1,74 @@
+<view class="page">
+  <view class="atmosphere" aria-hidden="true">
+    <view class="atmosphere__glow"></view>
+    <view class="atmosphere__ticks"></view>
+  </view>
+
+  <view class="stage">
+    <!-- Brand：加载/失败/成功均保留 -->
+    <view class="brand {{status !== 'loading' ? 'anim-in' : ''}}">
+      <text class="brand__title">纳斯达克综合指数</text>
+      <text class="brand__subtitle">NASDAQ Composite  ·  ^IXIC</text>
+    </view>
+
+    <!-- Loading：骨架，不挡品牌名 -->
+    <view wx:if="{{status === 'loading'}}" class="hero">
+      <view class="skeleton skeleton--price"></view>
+      <view class="skeleton-row">
+        <view class="skeleton skeleton--chg"></view>
+        <view class="skeleton skeleton--chg"></view>
+      </view>
+      <text class="loading-hint">行情加载中</text>
+    </view>
+
+    <!-- Error：无缓存 -->
+    <view wx:elif="{{status === 'error'}}" class="error-panel anim-in">
+      <text class="error-panel__text">{{errorMessage || '行情暂时无法获取，请稍后重试'}}</text>
+      <view class="action action--retry" bindtap="onRetry">
+        <text>重试</text>
+        <view class="action__line"></view>
+      </view>
+    </view>
+
+    <!-- Success / 休市同布局 -->
+    <block wx:else>
+      <view class="hero anim-in anim-in--delay1">
+        <text
+          class="hero__price hero__price--{{quote.direction}} {{quote.marketStatus === 'open' ? 'hero__price--live' : ''}} {{flashPrice ? 'hero__price--flash' : ''}}"
+        >{{quote.priceText}}</text>
+        <view class="hero__delta hero__delta--{{quote.direction}} anim-in anim-in--delay2">
+          <text class="hero__change">{{quote.changeText}}</text>
+          <text class="hero__sep">·</text>
+          <text class="hero__pct">{{quote.changePercentText}}</text>
+        </view>
+      </view>
+
+      <view class="meta anim-in anim-in--delay3">
+        <view wx:if="{{errorMessage}}" class="meta__warn">
+          <text>{{errorMessage}}</text>
+        </view>
+
+        <view class="meta__status">
+          <view class="meta__dot meta__dot--{{quote.marketStatus}}"></view>
+          <text class="meta__status-text">{{quote.marketStatusText}}</text>
+          <text wx:if="{{quote.marketStatus === 'closed'}}" class="meta__closed-hint">显示最近收盘相关数据</text>
+        </view>
+
+        <text class="meta__time">更新于 {{quote.updatedAtText}}</text>
+        <text class="meta__tz">{{quote.timezoneHint}}</text>
+
+        <view wx:if="{{isMock}}" class="meta__mock">
+          <text>当前为模拟数据（config/api.js 可切换真实源）</text>
+        </view>
+      </view>
+
+      <view
+        class="action {{refreshing ? 'action--disabled' : ''}}"
+        bindtap="onRetry"
+      >
+        <text>{{refreshing ? '刷新中…' : '刷新行情'}}</text>
+        <view class="action__line"></view>
+      </view>
+    </block>
+  </view>
+</view>
