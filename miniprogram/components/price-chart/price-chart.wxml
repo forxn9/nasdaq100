@@ -1,12 +1,17 @@
 <view class="chart {{ready ? 'chart--ready' : ''}}">
+  <!-- §13.3 图头：近十年 + 起止日期 · 涨跌额 · 涨跌幅 -->
   <view class="chart__head">
-    <text class="chart__range">{{rangeLabel}}</text>
+    <view class="chart__head-left">
+      <text class="chart__range">{{rangeLabel}}</text>
+      <text class="chart__dates" wx:if="{{dateRangeText}}">{{dateRangeText}}</text>
+    </view>
     <view class="chart__chg chart__chg--{{direction}}">
       <text>{{changeText}}</text>
-      <text class="chart__chg-sep"></text>
+      <text class="chart__chg-gap"></text>
       <text>{{changePercentText}}</text>
     </view>
   </view>
+
   <view class="chart__canvas-wrap">
     <canvas
       canvas-id="priceChart"
@@ -17,12 +22,13 @@
       <text>暂无走势</text>
     </view>
   </view>
+
   <view class="chart__axis" wx:if="{{startLabel && endLabel}}">
     <text>{{startLabel}}</text>
     <text>{{endLabel}}</text>
   </view>
 
-  <!-- Binance 式底部 range scrubber：双滑块 + 遮罩 -->
+  <!-- §13.2 底部双滑块 range scrubber：迷你 10Y + 窗外蒙暗 + 选中窗黄 tint -->
   <view
     class="chart__scrub {{dragging ? 'chart__scrub--active' : ''}}"
     wx:if="{{points && points.length > 1}}"
@@ -36,13 +42,27 @@
       class="chart__scrub-canvas"
       style="width: {{scrubW}}px; height: {{scrubH}}px;"
     ></canvas>
+    <view class="chart__scrub-mask chart__scrub-mask--left" style="width: {{maskLeftW}}px;"></view>
+    <view class="chart__scrub-mask chart__scrub-mask--right" style="left: {{maskRightL}}px; width: {{maskRightW}}px;"></view>
     <view
       class="chart__scrub-window"
       style="left: {{windowLeft}}px; width: {{windowWidth}}px;"
     >
-      <view class="chart__scrub-handle chart__scrub-handle--start"></view>
-      <view class="chart__scrub-handle chart__scrub-handle--end"></view>
+      <view class="chart__scrub-handle chart__scrub-handle--start">
+        <view class="chart__scrub-handle-bar"></view>
+      </view>
+      <view class="chart__scrub-handle chart__scrub-handle--end">
+        <view class="chart__scrub-handle-bar"></view>
+      </view>
     </view>
   </view>
-  <text class="chart__scrub-hint" wx:if="{{points && points.length > 1}}">拖动两端选择区间</text>
+
+  <view class="chart__scrub-meta" wx:if="{{points && points.length > 1}}">
+    <text class="chart__scrub-year">{{fullStartYear}}</text>
+    <text
+      class="chart__scrub-hint {{isFullWindow ? '' : 'chart__scrub-hint--action'}}"
+      catchtap="onResetRange"
+    >{{isFullWindow ? '拖动双柄选区间' : '复位'}}</text>
+    <text class="chart__scrub-year">{{fullEndYear}}</text>
+  </view>
 </view>

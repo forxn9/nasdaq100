@@ -1,33 +1,50 @@
-/** §6：红涨绿跌 */
+/**
+ * DecadeRangeChart + RangeScrubber（§3.4 / §13）
+ * 默认近十年全窗；底部双滑块；选中窗涨跌汇总。
+ */
 const UP = "#F6465D";
 const DOWN = "#0ECB81";
 const FLAT = "#848E9C";
 const GRID = "rgba(255, 255, 255, 0.06)";
 const LABEL = "#5E6673";
-const MASK = "rgba(11, 14, 17, 0.72)";
-const WINDOW_EDGE = "rgba(234, 236, 239, 0.85)";
-const SCRUB_LINE = "rgba(132, 142, 156, 0.55)";
+const SCRUB_MINI = "#5E6673";
 
 const { sliceAndSummarize } = require("../../services/history");
 
-const MIN_SPAN = 5;
-const HANDLE_HIT = 18;
+/** §13.2：最小跨度 ≥ 30 个交易日 */
+const MIN_SPAN = 30;
+/** 柄命中半宽（px），外扩约 44pt */
+const HANDLE_HIT_PX = 22;
+const DRAG_THROTTLE_MS = 80;
+const MAIN_MAX_POINTS = 280;
+const SCRUB_MAX_POINTS = 160;
 
-function shortDate(iso, withYear) {
+function pad2(n) {
+  return `${n}`.padStart(2, "0");
+}
+
+/** §13.3：跨度 ≥ 1 年用 YYYY-MM，否则 YYYY-MM-DD */
+function formatRangeDate(iso, spanDays) {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   const y = d.getUTCFullYear();
-  const m = `${d.getUTCMonth() + 1}`.padStart(2, "0");
-  const day = `${d.getUTCDate()}`.padStart(2, "0");
-  if (withYear) return `${y}-${m}`;
-  return `${m}-${day}`;
+  const m = pad2(d.getUTCMonth() + 1);
+  const day = pad2(d.getUTCDate());
+  if (spanDays >= 365) return `${y}-${m}`;
+  return `${y}-${m}-${day}`;
 }
 
-function axisLabel(iso, spanDays) {
+function yearOf(iso) {
   if (!iso) return "";
-  if (spanDays > 60) return shortDate(iso, true);
-  return shortDate(iso, false);
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getUTCFullYear()}`;
+}
+
+function spanDaysOf(a, b) {
+  if (!a || !b) return 0;
+  return Math.abs(new Date(b) - new Date(a)) / (24 * 60 * 60 * 1000);
 }
 
 function clamp(n, lo, hi) {
@@ -52,12 +69,15 @@ Component({
 
   data: {
     canvasW: 340,
-    canvasH: 180,
+    canvasH: 168,
     scrubW: 340,
-    scrubH: 44,
+    scrubH: 36,
     ready: false,
+    dateRangeText: "",
     startLabel: "",
     endLabel: "",
+    fullStartYear: "",
+    fullEndYear: "",
     direction: "flat",
     changeText: "--",
     changePercentText: "--",
@@ -65,7 +85,11 @@ Component({
     endRatio: 1,
     windowLeft: 0,
     windowWidth: 100,
+    maskLeftW: 0,
+    maskRightL: 0,
+    maskRightW: 0,
     dragging: "",
+    isFullWindow: true,
   },
 
   lifetimes: {
@@ -73,36 +97,37 @@ Component({
       this._ready = true;
       this._startRatio = 0;
       this._endRatio = 1;
-      this.resetSelection(true);
+      this._dragMode = "";
+      this._lastMainDraw = 0;
+      this.resetToFull();
       this.measureAndDraw();
     },
     detached() {
       this._ready = false;
+      if (this._throttleTimer) clearTimeout(this._throttleTimer);
     },
   },
 
   observers: {
-    points() {
+    points(pts) {
       if (!this._ready) return;
-      this.resetSelection(false);
+      // §13.4：刷新后保持比例映射；无点则清空
+      if (!pts || !pts.length) {
+        this.resetToFull();
+        this.measureAndDraw();
+        return;
+      }
+      if (this._startRatio == null || this._endRatio == null) {
+        this.resetToFull();
+      }
       this.measureAndDraw();
     },
   },
 
   methods: {
-    resetSelection(forceFull) {
-      const pts = this.properties.points || [];
-      if (!pts.length) {
-        this._startRatio = 0;
-        this._endRatio = 1;
-        this.applySelectionStats([]);
-        return;
-      }
-      if (forceFull || this._startRatio == null) {
-        this._startRatio = 0;
-        this._endRatio = 1;
-      }
-      this.syncSelectionUi();
+    resetToFull() {
+      this._startRatio = 0;
+      this._endRatio = 1;
     },
 
     indicesFromRatios(len) {
@@ -121,6 +146,15 @@ Component({
       return { start, end };
     },
 
+    /** 松手吸附到最近数据点（§13.2） */
+    snapToPoints() {
+      const pts = this.properties.points || [];
+      if (pts.length < 2) return;
+      const { start, end } = this.indicesFromRatios(pts.length);
+      this._startRatio = start / (pts.length - 1);
+      this._endRatio = end / (pts.length - 1);
+    },
+
     selectedPoints() {
       const pts = this.properties.points || [];
       if (!pts.length) return [];
@@ -129,38 +163,47 @@ Component({
     },
 
     buildSelectionState(sel) {
+      const all = this.properties.points || [];
+      if (!sel.length) {
+        return {
+          direction: "flat",
+          changeText: "--",
+          changePercentText: "--",
+          change: 0,
+          dateRangeText: "",
+          startLabel: "",
+          endLabel: "",
+          fullStartYear: all.length ? yearOf(all[0].t) : "",
+          fullEndYear: all.length ? yearOf(all[all.length - 1].t) : "",
+          isFullWindow: true,
+        };
+      }
       const summary = sliceAndSummarize(sel, 0, Math.max(0, sel.length - 1));
-      const spanDays =
-        sel.length >= 2
-          ? (new Date(sel[sel.length - 1].t) - new Date(sel[0].t)) /
-            (24 * 60 * 60 * 1000)
-          : 0;
+      const days = spanDaysOf(sel[0].t, sel[sel.length - 1].t);
+      const startFmt = formatRangeDate(sel[0].t, days);
+      const endFmt = formatRangeDate(sel[sel.length - 1].t, days);
+      const idx = this.indicesFromRatios(all.length || 1);
+      const isFull =
+        !all.length ||
+        (idx.start === 0 && idx.end === all.length - 1);
       return {
         direction: summary.direction,
         changeText: summary.changeText,
         changePercentText: summary.changePercentText,
         change: summary.change,
-        startLabel: sel.length ? axisLabel(sel[0].t, spanDays) : "",
-        endLabel: sel.length ? axisLabel(sel[sel.length - 1].t, spanDays) : "",
+        dateRangeText: `${startFmt} — ${endFmt}`,
+        startLabel: startFmt,
+        endLabel: endFmt,
+        fullStartYear: all.length ? yearOf(all[0].t) : "",
+        fullEndYear: all.length ? yearOf(all[all.length - 1].t) : "",
+        isFullWindow: isFull,
       };
-    },
-
-    applySelectionStats(sel) {
-      const state = this.buildSelectionState(sel);
-      this.setData({
-        direction: state.direction,
-        changeText: state.changeText,
-        changePercentText: state.changePercentText,
-        startLabel: state.startLabel,
-        endLabel: state.endLabel,
-      });
-      return state;
     },
 
     syncSelectionUi() {
       const pts = this.properties.points || [];
       const sel = this.selectedPoints();
-      const state = this.applySelectionStats(sel);
+      const state = this.buildSelectionState(sel);
       const w = this.data.scrubW || 340;
       const left = this._startRatio * w;
       const right = this._endRatio * w;
@@ -168,10 +211,22 @@ Component({
         ? this.indicesFromRatios(pts.length)
         : { start: 0, end: 0 };
       this.setData({
+        direction: state.direction,
+        changeText: state.changeText,
+        changePercentText: state.changePercentText,
+        dateRangeText: state.dateRangeText,
+        startLabel: state.startLabel,
+        endLabel: state.endLabel,
+        fullStartYear: state.fullStartYear,
+        fullEndYear: state.fullEndYear,
+        isFullWindow: state.isFullWindow,
         startRatio: this._startRatio,
         endRatio: this._endRatio,
         windowLeft: left,
         windowWidth: Math.max(2, right - left),
+        maskLeftW: Math.max(0, left),
+        maskRightL: right,
+        maskRightW: Math.max(0, w - right),
       });
       this.triggerEvent("rangechange", {
         startRatio: this._startRatio,
@@ -182,6 +237,7 @@ Component({
         changeText: state.changeText,
         changePercentText: state.changePercentText,
         direction: state.direction,
+        dateRangeText: state.dateRangeText,
       });
     },
 
@@ -194,7 +250,8 @@ Component({
         const scrubRect = res && res[1];
         const w =
           mainRect && mainRect.width ? Math.floor(mainRect.width) : 340;
-        const h = Math.max(160, Math.round(w * 0.48));
+        // §3.4：主图 160–180px
+        const h = clamp(Math.round(w * 0.48), 160, 180);
         const scrubW =
           scrubRect && scrubRect.width ? Math.floor(scrubRect.width) : w;
         this.setData(
@@ -202,7 +259,7 @@ Component({
             canvasW: w,
             canvasH: h,
             scrubW,
-            scrubH: 44,
+            scrubH: 36,
           },
           () => {
             this.syncSelectionUi();
@@ -232,7 +289,7 @@ Component({
       const padR = opts.padR != null ? opts.padR : 4;
       const padT = opts.padT != null ? opts.padT : 12;
       const padB = opts.padB != null ? opts.padB : 8;
-      const lineW = opts.lineW != null ? opts.lineW : 2;
+      const lineW = opts.lineW != null ? opts.lineW : 1.75;
       const showGrid = !!opts.showGrid;
       const showDot = !!opts.showDot;
       const showLabels = !!opts.showLabels;
@@ -265,7 +322,9 @@ Component({
           ctx.lineTo(w - padR, y);
           ctx.setStrokeStyle(GRID);
           ctx.setLineWidth(1);
+          ctx.setLineDash([3, 4]);
           ctx.stroke();
+          ctx.setLineDash([]);
         }
       }
 
@@ -297,7 +356,7 @@ Component({
       if (showDot) {
         const last = coords[coords.length - 1];
         ctx.beginPath();
-        ctx.arc(last.x, last.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(last.x, last.y, 3, 0, Math.PI * 2);
         ctx.setFillStyle(color);
         ctx.fill();
       }
@@ -312,7 +371,7 @@ Component({
     },
 
     drawMain() {
-      const pts = downsample(this.selectedPoints(), 480);
+      const pts = downsample(this.selectedPoints(), MAIN_MAX_POINTS);
       const w = this.data.canvasW;
       const h = this.data.canvasH;
       const ctx = wx.createCanvasContext("priceChart", this);
@@ -323,16 +382,18 @@ Component({
         showLabels: true,
         color: this.colorFor(direction),
         fill: this.fillFor(direction),
-        lineW: 2,
+        lineW: 1.75,
       });
       ctx.draw(false, () => {
         if (!this.data.ready) this.setData({ ready: true });
       });
+      this._lastMainDraw = Date.now();
     },
 
+    /** 迷你轨只画全 10Y 折线；遮罩/窗/柄用 view（§13.2） */
     drawScrub() {
       const all = this.properties.points || [];
-      const pts = downsample(all, 160);
+      const pts = downsample(all, SCRUB_MAX_POINTS);
       const w = this.data.scrubW;
       const h = this.data.scrubH;
       const ctx = wx.createCanvasContext("scrubChart", this);
@@ -344,19 +405,32 @@ Component({
         showGrid: false,
         showDot: false,
         showLabels: false,
-        color: SCRUB_LINE,
-        fill: "rgba(132, 142, 156, 0.14)",
-        lineW: 1,
+        color: SCRUB_MINI,
+        fill: "rgba(94, 102, 115, 0.12)",
+        lineW: 1.2,
       });
-      const left = this._startRatio * w;
-      const right = this._endRatio * w;
-      ctx.setFillStyle(MASK);
-      ctx.fillRect(0, 0, left, h);
-      ctx.fillRect(right, 0, Math.max(0, w - right), h);
-      ctx.setStrokeStyle(WINDOW_EDGE);
-      ctx.setLineWidth(1);
-      ctx.strokeRect(left, 0.5, Math.max(1, right - left), h - 1);
       ctx.draw();
+    },
+
+    scheduleMainDraw(force) {
+      const now = Date.now();
+      if (force) {
+        if (this._throttleTimer) {
+          clearTimeout(this._throttleTimer);
+          this._throttleTimer = null;
+        }
+        this.drawMain();
+        return;
+      }
+      if (now - (this._lastMainDraw || 0) >= DRAG_THROTTLE_MS) {
+        this.drawMain();
+        return;
+      }
+      if (this._throttleTimer) return;
+      this._throttleTimer = setTimeout(() => {
+        this._throttleTimer = null;
+        this.drawMain();
+      }, DRAG_THROTTLE_MS);
     },
 
     ratioFromTouch(e) {
@@ -384,7 +458,7 @@ Component({
       const start = this._startRatio;
       const end = this._endRatio;
       const w = this.data.scrubW || 1;
-      const hit = HANDLE_HIT / w;
+      const hit = HANDLE_HIT_PX / w;
       const dStart = Math.abs(ratio - start);
       const dEnd = Math.abs(ratio - end);
       if (dStart <= hit && dStart <= dEnd) return "start";
@@ -394,6 +468,15 @@ Component({
     },
 
     onScrubStart(e) {
+      // 双击复位（§13.2）
+      const now = Date.now();
+      if (this._lastTapAt && now - this._lastTapAt < 320) {
+        this._lastTapAt = 0;
+        this.onResetRange();
+        return;
+      }
+      this._lastTapAt = now;
+
       this.cacheScrubLeft(() => {
         const ratio = this.ratioFromTouch(e);
         if (ratio == null) return;
@@ -417,9 +500,21 @@ Component({
     },
 
     onScrubEnd() {
+      if (!this._dragMode) return;
       this._dragMode = "";
+      this.snapToPoints();
       this.setData({ dragging: "" });
-      this.drawMain();
+      this.syncSelectionUi();
+      this.scheduleMainDraw(true);
+      this.drawScrub();
+    },
+
+    onResetRange() {
+      this._dragMode = "";
+      this.resetToFull();
+      this.setData({ dragging: "" });
+      this.syncSelectionUi();
+      this.scheduleMainDraw(true);
       this.drawScrub();
     },
 
@@ -453,8 +548,7 @@ Component({
       this._startRatio = start;
       this._endRatio = end;
       this.syncSelectionUi();
-      this.drawMain();
-      this.drawScrub();
+      this.scheduleMainDraw(false);
     },
   },
 });

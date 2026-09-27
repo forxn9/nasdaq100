@@ -25,6 +25,11 @@ page {
   --chart-line-down: #0ecb81;
   --chart-fill-up: rgba(246, 70, 93, 0.16);
   --chart-fill-down: rgba(14, 203, 129, 0.16);
+  --scrubber-track: #1e2329;
+  --scrubber-mask: rgba(11, 14, 17, 0.72);
+  --scrubber-window: rgba(240, 185, 11, 0.18);
+  --scrubber-handle: #eaecef;
+  --scrubber-mini: #5e6673;
 
   /* VIX 色阶 §6 */
   --vix-low: #0ecb81;
